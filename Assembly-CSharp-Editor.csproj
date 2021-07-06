@@ -53,19 +53,19 @@
     <UnityVersion>2020.3.13f1c1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assets\Editor\SVNHelper.cs" />
+    <Compile Include="Assets\Editor\GamePath.cs" />
+    <Compile Include="Assets\Editor\Utility.cs" />
     <Compile Include="Assets\Editor\TexturePackerFlag.cs" />
     <Compile Include="Assets\Editor\FolderTools.cs" />
     <Compile Include="Assets\Editor\FindPrefabChar.cs" />
+    <Compile Include="Assets\Editor\UITextureFindPic.cs" />
+    <Compile Include="Assets\Editor\ProjectExtensionSettings.cs" />
+    <Compile Include="Assets\Editor\StringTools.cs" />
     <Compile Include="Assets\Editor\TexturePackerEditor.cs" />
     <Compile Include="Assets\Editor\TexturePackerFind.cs" />
-    <Compile Include="Assets\Editor\SVNUtils.cs" />
-    <Compile Include="Assets\Editor\UITextureFindPic.cs" />
-    <Compile Include="Assets\Editor\FileHelper.cs" />
-    <Compile Include="Assets\Editor\StringTools.cs" />
-    <Compile Include="Assets\Editor\GamePath.cs" />
-    <Compile Include="Assets\Editor\ProjectExtensionSettings.cs" />
-    <Compile Include="Assets\Editor\Utility.cs" />
     <Compile Include="Assets\Editor\Yielders.cs" />
+    <Compile Include="Assets\Editor\FileHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -299,6 +299,9 @@
     <Reference Include="UnityEditor.WindowsStandalone.Extensions">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.13f1c1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio Tools for Unity\16.0\Editor\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Plastic.Antlr3.Runtime">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@1.5.7\Lib\Editor\PlasticSCM\Unity.Plastic.Antlr3.Runtime.dll</HintPath>
     </Reference>
@@ -310,9 +313,6 @@
     </Reference>
     <Reference Include="unityplastic">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@1.5.7\Lib\Editor\PlasticSCM\unityplastic.dll</HintPath>
-    </Reference>
-    <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
-      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio Tools for Unity\16.0\Editor\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom\nunit.framework.dll</HintPath>

@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using Common;
 using UObject = UnityEngine.Object;
 using Newtonsoft.Json;
 
@@ -239,7 +240,7 @@ public class TexturePackerFind : EditorWindow
         #region 更新项目
         if (GUILayout.Button("更新项目", GUILayout.MaxWidth(80)))
         {
-            SVNUtilsEditor.UpdateFromSVN();
+            SVNHelper.UpdateFromSVN();
         }
         #endregion
         #region 保存

@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using Common;
 using UObject = UnityEngine.Object;
 
 public class TexturePackerEditor : EditorWindow
@@ -107,7 +108,7 @@ public class TexturePackerEditor : EditorWindow
         {
             if (GUILayout.Button("更新", GUILayout.MaxWidth(60)))
             {
-                SVNUtilsEditor.ExecuteCommand(SVNUtilsEditor.Command.Update, particlePath);
+                SVNHelper.ExecuteCommand(SVNHelper.Command.Update, particlePath);
             }
         }
         #endregion
@@ -116,7 +117,7 @@ public class TexturePackerEditor : EditorWindow
         {
             if (GUILayout.Button("提交", GUILayout.MaxWidth(60)))
             {
-                SVNUtilsEditor.ExecuteCommand(SVNUtilsEditor.Command.Commit, particlePath);
+                SVNHelper.ExecuteCommand(SVNHelper.Command.Commit, particlePath);
             }
         }
         #endregion

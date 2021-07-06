@@ -32,7 +32,7 @@ public class FindPrefabChar : EditorWindow
         }
     }
 
-    [MenuItem("检查工具/资源[3]/查找预设文字")]
+    [MenuItem("Tools/查找预设文字")]
     static void AddWindow()
     {
         var win = GetWindow<FindPrefabChar>("查找预设文字");

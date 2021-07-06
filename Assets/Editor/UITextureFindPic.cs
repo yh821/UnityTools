@@ -21,7 +21,7 @@ public class UITextureFindPic : EditorWindow
         }
 
     }
-    [MenuItem("检查工具/资源[3]/图片找出处")]
+    [MenuItem("Tools/图片找出处")]
     static void AddWindow()
     {
         //创建窗口
