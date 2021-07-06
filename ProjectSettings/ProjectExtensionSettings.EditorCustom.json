@@ -1,0 +1,5 @@
+{
+    "writablePath": "LocalFile",
+    "logPath": "LocalFile",
+    "cachePath": "Cache"
+}
