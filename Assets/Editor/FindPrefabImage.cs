@@ -117,7 +117,7 @@ public class FindPrefabImage : EditorWindow
         if (GUILayout.Button("开始查找"))
         {
             if ((mIsSprite && mInputSprite != null) || (!mIsSprite && mInputTexture != null))
-                FindImageReference();
+                StartFindImageReference();
             else
                 ShowNotification(new GUIContent("请设置查找的图片"));
         }
@@ -294,7 +294,7 @@ public class FindPrefabImage : EditorWindow
         return GameObject.Find(name);
     }
 
-    public void FindImageReference()
+    private void StartFindImageReference()
     {
         mDataDict.Clear();
         var dirs = Directory.GetFiles(mFindPath, "*.prefab", SearchOption.AllDirectories);
@@ -384,6 +384,16 @@ public class FindPrefabImage : EditorWindow
                     rawImage.texture = mReplaceTexture;
             }
         }
+    }
+
+    public void FindImageReference(Sprite sprite)
+    {
+        mIsSprite = true;
+        mInputSprite = sprite;
+        var path = AssetDatabase.GetAssetPath(mInputSprite);
+        mInputTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        mLastInputTexture = mInputTexture;
+        StartFindImageReference();
     }
 
 }

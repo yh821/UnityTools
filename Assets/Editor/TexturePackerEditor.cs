@@ -239,8 +239,8 @@ public class TexturePackerEditor : EditorWindow
                         #region 引用
                         if (GUILayout.Button("引用", GUILayout.MaxWidth(40)))
                         {
-                            UITextureFindPic window = GetWindow<UITextureFindPic>("图片找出处");
-                            window.FindSpriteReference(obj as Sprite);
+                            var win = GetWindow<FindPrefabImage>("图片找出处");
+                            win.FindImageReference(obj as Sprite);
                         }
                         #endregion
                         EditorGUILayout.ObjectField(obj, typeof(Texture2D), false, GUILayout.MinWidth(50));
@@ -292,8 +292,8 @@ public class TexturePackerEditor : EditorWindow
                     #region 引用
                     if (GUILayout.Button("引用", GUILayout.MaxWidth(40)))
                     {
-                        UITextureFindPic window = GetWindow<UITextureFindPic>("图片找出处");
-                        window.FindSpriteReference(objs[i] as Sprite);
+                        var win = GetWindow<FindPrefabImage>("图片找出处");
+                        win.FindImageReference(objs[i] as Sprite);
                     }
                     #endregion
                     EditorGUILayout.ObjectField(objs[i], typeof(Sprite), false, GUILayout.MinWidth(50));
