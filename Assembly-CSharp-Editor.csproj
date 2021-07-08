@@ -59,7 +59,7 @@
     <Compile Include="Assets\Editor\TexturePackerFlag.cs" />
     <Compile Include="Assets\Editor\FolderTools.cs" />
     <Compile Include="Assets\Editor\FindPrefabChar.cs" />
-    <Compile Include="Assets\Editor\UITextureFindPic.cs" />
+    <Compile Include="Assets\Editor\FindPrefabImage.cs" />
     <Compile Include="Assets\Editor\ProjectExtensionSettings.cs" />
     <Compile Include="Assets\Editor\StringTools.cs" />
     <Compile Include="Assets\Editor\TexturePackerEditor.cs" />
