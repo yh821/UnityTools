@@ -11,14 +11,14 @@ public class FindPrefabChar : EditorWindow
     class Data
     {
         public string text;
-        public string chn_text;
+        public string cn_text;
         public List<string> assetPaths;
         public bool foldout;
 
         public Data(string text)
         {
             this.text = text;
-            this.chn_text = ChineseToUnicode(text);
+            this.cn_text = ChineseToUnicode(text);
             assetPaths = new List<string>();
             foldout = false;
         }
@@ -26,7 +26,7 @@ public class FindPrefabChar : EditorWindow
         public Data(string text, string chn_text)
         {
             this.text = text;
-            this.chn_text = chn_text;
+            this.cn_text = chn_text;
             assetPaths = new List<string>();
             foldout = false;
         }
@@ -39,11 +39,11 @@ public class FindPrefabChar : EditorWindow
         win.Init();
     }
 
-    private static readonly Regex textRegex = new Regex(@"m_Text: ""(\S+)""", RegexOptions.Singleline);
-    private static readonly Regex codeRegex = new Regex(@"((\\u\w{4})+)", RegexOptions.Singleline);
-    private static readonly Regex chnRegex = new Regex(@"([\u4E00-\u9FA5]+)", RegexOptions.Singleline);
+    private static readonly Regex TextRegex = new Regex(@"m_Text: ""(\S+)""", RegexOptions.Singleline);
+    private static readonly Regex CodeRegex = new Regex(@"((\\u\w{4})+)", RegexOptions.Singleline);
+    private static readonly Regex ChnRegex = new Regex(@"([\u4E00-\u9FA5]+)", RegexOptions.Singleline);
 
-    static public string StringToUnicode(string value)
+    public static string StringToUnicode(string value)
     {
         byte[] bytes = Encoding.Unicode.GetBytes(value);
         StringBuilder sb = new StringBuilder();
@@ -68,7 +68,7 @@ public class FindPrefabChar : EditorWindow
 
     static public string ChineseToUnicode(string value)
     {
-        var chn_matchs = chnRegex.Matches(value);
+        var chn_matchs = ChnRegex.Matches(value);
         foreach (Match cm in chn_matchs)
         {
             var str = cm.Groups[1].Value;
@@ -80,7 +80,7 @@ public class FindPrefabChar : EditorWindow
 
     static public string UnicodeToChinese(string value)
     {
-        var code_matchs = codeRegex.Matches(value);
+        var code_matchs = CodeRegex.Matches(value);
         foreach (Match cm in code_matchs)
         {
             var code = cm.Groups[1].Value;
@@ -177,7 +177,7 @@ public class FindPrefabChar : EditorWindow
             {
                 EditorGUILayout.BeginHorizontal();
                 data = searchData[i];
-                EditorGUILayout.LabelField(i.ToString(), data.chn_text);
+                EditorGUILayout.LabelField(i.ToString(), data.cn_text);
                 data.foldout = EditorGUILayout.Foldout(data.foldout, "使用该文本的预设", true);
                 EditorGUILayout.EndHorizontal();
                 if (data.foldout)
@@ -235,7 +235,7 @@ public class FindPrefabChar : EditorWindow
         {
             foreach (var chn in dict.Values)
             {
-                if (chn.chn_text.IndexOf(searchKey) != -1)
+                if (chn.cn_text.IndexOf(searchKey) != -1)
                     searchData.Add(chn);
             }
         }
@@ -253,7 +253,7 @@ public class FindPrefabChar : EditorWindow
             if (path.Contains("Prefabs/Ch") || path.Contains("Prefabs/Effect"))
                 continue;
             string text = File.ReadAllText(path);
-            var text_matchs = textRegex.Matches(text);
+            var text_matchs = TextRegex.Matches(text);
             Data data;
             foreach (Match tm in text_matchs)
             {
@@ -285,7 +285,7 @@ public class FindPrefabChar : EditorWindow
             {
                 w.WriteLine(string.Format("{0},{1}",
                     item.Key,
-                    item.Value.chn_text));
+                    item.Value.cn_text));
             }
             w.Close();
         }
