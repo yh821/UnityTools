@@ -56,14 +56,14 @@ public class UIComponentFactory
             Texture2D tex = null;
             if (image.sprite)
                 tex = image.sprite.texture;
-            Material mat = null;
-            if (image.mainTexture.name != "UIDefault")
-                mat = image.material;
+            //Material mat = null;
+            //if (image.mainTexture.name != "Default")
+            //    mat = image.material;
             var ray = image.raycastTarget;
             Object.DestroyImmediate(image);
             var rawImage = Selection.activeGameObject.AddComponent<RawImage>();
             rawImage.texture = tex;
-            rawImage.material = mat;
+            //rawImage.material = mat;
             rawImage.raycastTarget = ray;
             EditorUtility.SetDirty(Selection.activeGameObject);
         }
@@ -75,23 +75,25 @@ public class UIComponentFactory
         var rawImage = Selection.activeGameObject.GetComponent<RawImage>();
         if (rawImage != null)
         {
-            var path = AssetDatabase.GetAssetPath(rawImage.texture);
-            if (string.IsNullOrEmpty(path))
-                return;
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-            if (sprite == null)
+            Sprite sprite = null;
+            if (rawImage.texture != null)
             {
-                Debug.LogFormat("转换失败, 图片 <color=yellow>{0}</color> 不是 sprite 类型!");
-                return;
+                var path = AssetDatabase.GetAssetPath(rawImage.texture);
+                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (sprite == null)
+                {
+                    Debug.LogFormat("转换失败, 图片 <color=yellow>{0}</color> 不是 sprite 类型!", rawImage.texture.name);
+                    return;
+                }
             }
-            Material mat = null;
-            if (rawImage.mainTexture.name != "UIDefault")
-                mat = rawImage.material;
+            //Material mat = null;
+            //if (rawImage.mainTexture.name != "Default")
+            //    mat = rawImage.material;
             var ray = rawImage.raycastTarget;
             Object.DestroyImmediate(rawImage);
             var image = Selection.activeGameObject.AddComponent<Image>();
             image.sprite = sprite;
-            image.material = mat;
+            //image.material = mat;
             image.raycastTarget = ray;
             EditorUtility.SetDirty(Selection.activeGameObject);
         }
