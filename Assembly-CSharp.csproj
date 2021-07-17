@@ -56,6 +56,8 @@
     <Compile Include="Assets\Scripts\GravitySensor.cs" />
     <Compile Include="Assets\Scripts\ObjectPool.cs" />
     <Compile Include="Assets\Scripts\ListPool.cs" />
+    <Compile Include="Assets\Scripts\Property\TestList.cs" />
+    <Compile Include="Assets\Scripts\Property\CharacterTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

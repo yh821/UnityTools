@@ -6,6 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using UnityEditor.Experimental.SceneManagement;
 using UnityEditor.SceneManagement;
+using UnityEditorInternal;
 
 public class FindPrefabImage : EditorWindow
 {
@@ -55,6 +56,11 @@ public class FindPrefabImage : EditorWindow
     private Object mLastObj;
     private string mPath;
 
+    private SerializedObject mPathSerializedObject;
+    private SerializedProperty mPathSerializedProperty;
+    private ReorderableList mPathReorderableList;
+    public List<string> PathList;
+
     private Transform mTempParent = null;
     public Transform TempParent
     {
@@ -74,20 +80,66 @@ public class FindPrefabImage : EditorWindow
     {
         mInputSprite = sprite;
         mFindPath = Path.Combine(Application.dataPath, "Game/UIs/View");
+
+        InitPathGUI();
+    }
+
+    private void InitPathGUI()
+    {
+        mPathSerializedObject = new SerializedObject(this);
+        mPathSerializedProperty = mPathSerializedObject.FindProperty("PathList");
+        mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
+        {
+            drawHeaderCallback = rect => GUI.Label(rect, "路径列表:"),
+            elementHeight = EditorGUIUtility.singleLineHeight,
+            drawElementCallback = (rect, index, selected, focused) =>
+            {
+                var element = mPathSerializedProperty.GetArrayElementAtIndex(index);
+                EditorGUI.PropertyField(rect, element, GUIContent.none);
+            }
+        };
     }
 
     void OnGUI()
     {
         EditorGUIUtility.labelWidth = 64;
         GUILayout.Space(SpacePixels);
+
+        mPathReorderableList?.DoLayoutList();
+        mPathSerializedObject?.ApplyModifiedProperties();
+
         EditorGUILayout.BeginHorizontal();
         {
-            if (GUILayout.Button("选择路径", GUILayout.MaxWidth(100)))
+            mGuid = EditorGUILayout.TextField("GUID:", mGuid, GUILayout.MaxWidth(300));
+            if (mGuid != mLastGuid)
             {
-                mFindPath = EditorUtility.OpenFolderPanel("选择遍历路径", mFindPath, "");
+                mLastGuid = mGuid;
+                mPath = AssetDatabase.GUIDToAssetPath(mGuid);
+                mObj = AssetDatabase.LoadAssetAtPath<Object>(mPath);
+                mLastObj = mObj;
             }
+
+            if (mObj != mLastObj)
+            {
+                mLastObj = mObj;
+                mPath = AssetDatabase.GetAssetPath(mObj);
+                mGuid = AssetDatabase.AssetPathToGUID(mPath);
+                mLastGuid = mGuid;
+            }
+
+            mObj = EditorGUILayout.ObjectField(mObj, typeof(Object), false, GUILayout.MaxWidth(150));
+            EditorGUILayout.TextField(mPath);
         }
         EditorGUILayout.EndHorizontal();
+
+        //EditorGUILayout.BeginHorizontal();
+        //{
+        //    if (GUILayout.Button("选择路径", GUILayout.MaxWidth(100)))
+        //    {
+        //        mFindPath = EditorUtility.OpenFolderPanel("选择遍历路径", mFindPath, "");
+        //    }
+        //}
+        //EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         {
@@ -297,10 +349,13 @@ public class FindPrefabImage : EditorWindow
     private void StartFindImageReference()
     {
         mDataDict.Clear();
-        var dirs = Directory.GetFiles(mFindPath, "*.prefab", SearchOption.AllDirectories);
-        for (int i = 0; i < dirs.Length; i++)
+        //var dirs = Directory.GetFiles(mFindPath, "*.prefab", SearchOption.AllDirectories);
+        //for (int i = 0; i < dirs.Length; i++)
+        var guids = AssetDatabase.FindAssets("t:prefab", PathList.ToArray());
+        for (int i = 0; i < guids.Length; i++)
         {
-            var path = "Assets" + dirs[i].Replace(Application.dataPath, "").Replace('\\','/');
+            //var path = "Assets" + dirs[i].Replace(Application.dataPath, "").Replace('\\','/');
+            var path = AssetDatabase.GUIDToAssetPath(guids[i]);
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (prefab != null)
             {
@@ -308,7 +363,7 @@ public class FindPrefabImage : EditorWindow
                 if (!mDataDict.ContainsKey(path) && GetAllSpritePath(prefab, ref data.children))
                     mDataDict.Add(path, data);
             }
-            EditorUtility.DisplayProgressBar("查找索引...", path, (float)i / dirs.Length);
+            EditorUtility.DisplayProgressBar("查找索引...", path, (float)i / guids.Length);
         }
         EditorUtility.ClearProgressBar();
     }

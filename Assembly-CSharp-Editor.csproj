@@ -70,6 +70,10 @@
     <Compile Include="Assets\Editor\Toolbar\ToolbarExtender.cs" />
     <Compile Include="Assets\Editor\Toolbar\UnityTopBar.cs" />
     <Compile Include="Assets\Editor\GUISytleViewer.cs" />
+    <Compile Include="Assets\Editor\Inspector\CharacterDrawer.cs" />
+    <Compile Include="Assets\Editor\Inspector\TestListEditor.cs" />
+    <Compile Include="Assets\Editor\Inspector\CharacterInspector.cs" />
+    <Compile Include="Assets\Editor\UIComponentFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
