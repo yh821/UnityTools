@@ -66,6 +66,10 @@
     <Compile Include="Assets\Editor\TexturePackerFind.cs" />
     <Compile Include="Assets\Editor\Yielders.cs" />
     <Compile Include="Assets\Editor\FileHelper.cs" />
+    <Compile Include="Assets\Editor\Toolbar\ToolbarCallback.cs" />
+    <Compile Include="Assets\Editor\Toolbar\ToolbarExtender.cs" />
+    <Compile Include="Assets\Editor\Toolbar\UnityTopBar.cs" />
+    <Compile Include="Assets\Editor\GUISytleViewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
