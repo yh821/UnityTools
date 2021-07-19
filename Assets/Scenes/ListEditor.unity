@@ -400,6 +400,7 @@ MonoBehaviour:
   m_colors:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 0.6397059, b: 0.6397059, a: 1}
+  - {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &735554362
 Transform:
   m_ObjectHideFlags: 0

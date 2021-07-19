@@ -5,11 +5,12 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-/// <summary>
-/// 游戏路径管理
-/// </summary>
+
 namespace Common
 {
+    /// <summary>
+    /// 游戏路径管理
+    /// </summary>
     //CustomLuaClassAttribute    
     public static class GamePath
     {

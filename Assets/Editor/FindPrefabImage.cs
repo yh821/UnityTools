@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
 using System.IO;
-using Newtonsoft.Json;
 using UnityEditor.Experimental.SceneManagement;
 using UnityEditor.SceneManagement;
 using UnityEditorInternal;
@@ -33,7 +32,7 @@ public class FindPrefabImage : EditorWindow
         win.Init();
     }
 
-    private string mFindPath = string.Empty;
+    //private string mFindPath = string.Empty;
     private bool mIsSprite = false;
 
     private Sprite mInputSprite = null;
@@ -59,7 +58,9 @@ public class FindPrefabImage : EditorWindow
     private SerializedObject mPathSerializedObject;
     private SerializedProperty mPathSerializedProperty;
     private ReorderableList mPathReorderableList;
-    public List<string> PathList;
+
+    public const string PathListKey = "FindPrefabImage.PathList";
+    public List<string> PathList = null;
 
     private Transform mTempParent = null;
     public Transform TempParent
@@ -76,16 +77,30 @@ public class FindPrefabImage : EditorWindow
         }
     }
 
+    void OnLostFocus()
+    {
+        SavePath();
+        Debug.Log("OnLostFocus");
+    }
+
     public void Init(Sprite sprite = null)
     {
         mInputSprite = sprite;
-        mFindPath = Path.Combine(Application.dataPath, "Game/UIs/View");
+        //mFindPath = Path.Combine(Application.dataPath, "Game/UIs/View");
 
-        InitPathGUI();
+        InitPathGui();
     }
 
-    private void InitPathGUI()
+    private void SavePath()
     {
+        mPathSerializedObject?.ApplyModifiedProperties();
+        EditorPrefs.SetString(PathListKey, string.Join("|", PathList));
+    }
+
+    private void InitPathGui()
+    {
+        var pathStr = EditorPrefs.GetString(PathListKey, "Assets/Game/UIs");
+        PathList = new List<string>(pathStr.Split('|'));
         mPathSerializedObject = new SerializedObject(this);
         mPathSerializedProperty = mPathSerializedObject.FindProperty("PathList");
         mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
@@ -106,7 +121,10 @@ public class FindPrefabImage : EditorWindow
         GUILayout.Space(SpacePixels);
 
         mPathReorderableList?.DoLayoutList();
-        mPathSerializedObject?.ApplyModifiedProperties();
+        //if (GUILayout.Button("保存路径"))
+        //{
+        //    SavePath();
+        //}
 
         EditorGUILayout.BeginHorizontal();
         {
@@ -168,6 +186,7 @@ public class FindPrefabImage : EditorWindow
         GUILayout.Space(SpacePixels);
         if (GUILayout.Button("开始查找"))
         {
+            SavePath();
             if ((mIsSprite && mInputSprite != null) || (!mIsSprite && mInputTexture != null))
                 StartFindImageReference();
             else
