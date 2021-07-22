@@ -55,12 +55,12 @@ public class FindPrefabImage : EditorWindow
     private Object mLastObj;
     private string mPath;
 
+    public const string PathListKey = "FindPrefabImage.PathList";
+    public const string DefaultPath = "Assets/Game/UIs";
+    public List<string> PathList = null;
     private SerializedObject mPathSerializedObject;
     private SerializedProperty mPathSerializedProperty;
     private ReorderableList mPathReorderableList;
-
-    public const string PathListKey = "FindPrefabImage.PathList";
-    public List<string> PathList = null;
 
     private Transform mTempParent = null;
     public Transform TempParent
@@ -80,7 +80,6 @@ public class FindPrefabImage : EditorWindow
     void OnLostFocus()
     {
         SavePath();
-        Debug.Log("OnLostFocus");
     }
 
     public void Init(Sprite sprite = null)
@@ -91,16 +90,12 @@ public class FindPrefabImage : EditorWindow
         InitPathGui();
     }
 
-    private void SavePath()
-    {
-        mPathSerializedObject?.ApplyModifiedProperties();
-        EditorPrefs.SetString(PathListKey, string.Join("|", PathList));
-    }
-
     private void InitPathGui()
     {
-        var pathStr = EditorPrefs.GetString(PathListKey, "Assets/Game/UIs");
+        var pathStr = EditorPrefs.GetString(PathListKey, DefaultPath);
         PathList = new List<string>(pathStr.Split('|'));
+        if (string.IsNullOrEmpty(PathList[0]))
+            PathList[0] = DefaultPath;
         mPathSerializedObject = new SerializedObject(this);
         mPathSerializedProperty = mPathSerializedObject.FindProperty("PathList");
         mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
@@ -113,6 +108,17 @@ public class FindPrefabImage : EditorWindow
                 EditorGUI.PropertyField(rect, element, GUIContent.none);
             }
         };
+    }
+
+    private void SavePath()
+    {
+        mPathSerializedObject.ApplyModifiedProperties();
+        for (int i = 0; i < PathList.Count; i++)
+        {
+            if(string.IsNullOrEmpty(PathList[i]))
+                PathList.RemoveAt(i);
+        }
+        EditorPrefs.SetString(PathListKey, string.Join("|", PathList));
     }
 
     void OnGUI()
@@ -186,7 +192,6 @@ public class FindPrefabImage : EditorWindow
         GUILayout.Space(SpacePixels);
         if (GUILayout.Button("开始查找"))
         {
-            SavePath();
             if ((mIsSprite && mInputSprite != null) || (!mIsSprite && mInputTexture != null))
                 StartFindImageReference();
             else
@@ -368,10 +373,17 @@ public class FindPrefabImage : EditorWindow
     private void StartFindImageReference()
     {
         mDataDict.Clear();
+        SavePath();
         //var dirs = Directory.GetFiles(mFindPath, "*.prefab", SearchOption.AllDirectories);
         //for (int i = 0; i < dirs.Length; i++)
-        var guids = AssetDatabase.FindAssets("t:prefab", PathList.ToArray());
-        for (int i = 0; i < guids.Length; i++)
+        var paths = PathList.ToArray();
+        if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
+        {
+            ShowNotification(new GUIContent("请设置路径"));
+            return;
+        }
+        var guids = AssetDatabase.FindAssets("t:prefab", paths);
+        for (int i = 0, len = guids.Length; i < len; i++)
         {
             //var path = "Assets" + dirs[i].Replace(Application.dataPath, "").Replace('\\','/');
             var path = AssetDatabase.GUIDToAssetPath(guids[i]);
@@ -382,7 +394,7 @@ public class FindPrefabImage : EditorWindow
                 if (!mDataDict.ContainsKey(path) && GetAllSpritePath(prefab, ref data.children))
                     mDataDict.Add(path, data);
             }
-            EditorUtility.DisplayProgressBar("查找索引...", path, (float)i / guids.Length);
+            EditorUtility.DisplayProgressBar("查找索引...", path, (float) i / len);
         }
         EditorUtility.ClearProgressBar();
     }

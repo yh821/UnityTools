@@ -4,11 +4,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnityEditorInternal;
 using UnityEngine.UI;
 
 public class FindPrefabChar : EditorWindow
 {
-    class Data
+    private class Data
     {
         public string text;
         public string cn_text;
@@ -33,7 +34,7 @@ public class FindPrefabChar : EditorWindow
     }
 
     [MenuItem("Tools/查找预设文字")]
-    static void AddWindow()
+    public static void AddWindow()
     {
         var win = GetWindow<FindPrefabChar>("查找预设文字");
         win.Init();
@@ -43,10 +44,17 @@ public class FindPrefabChar : EditorWindow
     private static readonly Regex CodeRegex = new Regex(@"((\\u\w{4})+)", RegexOptions.Singleline);
     private static readonly Regex ChnRegex = new Regex(@"([\u4E00-\u9FA5]+)", RegexOptions.Singleline);
 
+    public const string PathListKey = "FindPrefabChar.PathList";
+    public const string DefaultPath = "Assets/Game/UIs";
+    public List<string> PathList = null;
+    private SerializedObject mPathSerializedObject;
+    private SerializedProperty mPathSerializedProperty;
+    private ReorderableList mPathReorderableList;
+
     public static string StringToUnicode(string value)
     {
-        byte[] bytes = Encoding.Unicode.GetBytes(value);
-        StringBuilder sb = new StringBuilder();
+        var bytes = Encoding.Unicode.GetBytes(value);
+        var sb = new StringBuilder();
         for (int i = 0; i < bytes.Length; i += 2)
         {
             sb.AppendFormat("\\u{0}{1}", bytes[i + 1].ToString("x").PadLeft(2, '0'), bytes[i].ToString("x").PadLeft(2, '0'));
@@ -54,11 +62,11 @@ public class FindPrefabChar : EditorWindow
         return sb.ToString();
     }
 
-    static public string UnicodeToString(string value)
+    public static string UnicodeToString(string value)
     {
         StringBuilder sb = new StringBuilder();
         value = value.Replace("\\", "");
-        string[] unicodes = value.Split('u');
+        var unicodes = value.Split('u');
         for (int i = 1; i < unicodes.Length; i++)
         {
             sb.Append((char)int.Parse(unicodes[i], System.Globalization.NumberStyles.HexNumber));
@@ -66,7 +74,7 @@ public class FindPrefabChar : EditorWindow
         return sb.ToString();
     }
 
-    static public string ChineseToUnicode(string value)
+    public static string ChineseToUnicode(string value)
     {
         var chn_matchs = ChnRegex.Matches(value);
         foreach (Match cm in chn_matchs)
@@ -78,7 +86,7 @@ public class FindPrefabChar : EditorWindow
         return value;
     }
 
-    static public string UnicodeToChinese(string value)
+    public static string UnicodeToChinese(string value)
     {
         var code_matchs = CodeRegex.Matches(value);
         foreach (Match cm in code_matchs)
@@ -90,19 +98,19 @@ public class FindPrefabChar : EditorWindow
         return value;
     }
 
-    string projectPath = "";
-    string findPath = "";
-    Dictionary<string, Data> dict = new Dictionary<string, Data>();
-    List<Data> searchData = new List<Data>();
-    string searchKey = "";
-    string lastSearchKey = "";
+    private string projectPath = "";
+    //private string findPath = "";
+    private Dictionary<string, Data> dict = new Dictionary<string, Data>();
+    private List<Data> searchData = new List<Data>();
+    private string searchKey = "";
+    private string lastSearchKey = "";
 
-    GameObject selectPrefab;
-    bool isHaveCanvas = false;
+    private GameObject selectPrefab;
+    private bool isHaveCanvas = false;
 
-    Vector2 scroller = Vector2.zero;
+    private Vector2 scroller = Vector2.zero;
 
-    Transform TempParent
+    private Transform TempParent
     {
         get
         {
@@ -117,16 +125,56 @@ public class FindPrefabChar : EditorWindow
     }
     Transform mTempParent = null;
 
-    void Init()
+    private void Init()
     {
         projectPath = Application.dataPath.Replace("Assets", "");
-        findPath = Path.Combine(Application.dataPath, "Prefabs");
+        //findPath = Path.Combine(Application.dataPath, "Prefabs");
+
+        InitPathGui();
+    }
+
+    private void InitPathGui()
+    {
+        var pathStr = EditorPrefs.GetString(PathListKey, DefaultPath);
+        PathList = new List<string>(pathStr.Split('|'));
+        if (string.IsNullOrEmpty(PathList[0]))
+            PathList[0] = DefaultPath;
+        mPathSerializedObject = new SerializedObject(this);
+        mPathSerializedProperty = mPathSerializedObject.FindProperty("PathList");
+        mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
+        {
+            drawHeaderCallback = rect => GUI.Label(rect, "路径列表:"),
+            elementHeight = EditorGUIUtility.singleLineHeight,
+            drawElementCallback = (rect, index, selected, focused) =>
+            {
+                var element = mPathSerializedProperty.GetArrayElementAtIndex(index);
+                EditorGUI.PropertyField(rect, element, GUIContent.none);
+            }
+        };
+    }
+
+    private void SavePath()
+    {
+        mPathSerializedObject.ApplyModifiedProperties();
+        for (int i = 0; i < PathList.Count; i++)
+        {
+            if (string.IsNullOrEmpty(PathList[i]))
+                PathList.RemoveAt(i);
+        }
+        EditorPrefs.SetString(PathListKey, string.Join("|", PathList));
+    }
+
+    void OnLostFocus()
+    {
+        SavePath();
     }
 
     void OnGUI()
     {
         EditorGUILayout.BeginVertical();
         EditorGUIUtility.labelWidth = 64;
+
+        mPathReorderableList?.DoLayoutList();
 
         EditorGUILayout.BeginHorizontal();
         #region 导入预设文字
@@ -221,7 +269,7 @@ public class FindPrefabChar : EditorWindow
         EditorGUILayout.EndVertical();
     }
 
-    void RefreshSearchText()
+    private void RefreshSearchText()
     {
         searchData.Clear();
         if (string.IsNullOrEmpty(searchKey))
@@ -241,77 +289,78 @@ public class FindPrefabChar : EditorWindow
         }
     }
 
-    void FindTextReference()
+    private void FindTextReference()
     {
         dict.Clear();
-        string[] dirs = Directory.GetFiles(findPath, "*.prefab", SearchOption.AllDirectories);
-        for (int i = 0; i < dirs.Length; i++)
+        SavePath();
+        //string[] dirs = Directory.GetFiles(findPath, "*.prefab", SearchOption.AllDirectories);
+        var paths = PathList.ToArray();
+        if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
         {
-            string path = dirs[i];
-            path = "Assets" + path.Replace(Application.dataPath, "");
-            path = path.Replace("\\", "/");
+            ShowNotification(new GUIContent("请设置路径"));
+            return;
+        }
+        var guids = AssetDatabase.FindAssets("t:prefab", paths);
+        for (int i = 0, len = guids.Length; i < len; i++)
+        {
+            var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            //path = "Assets" + path.Replace(Application.dataPath, "");
+            //path = path.Replace("\\", "/");
             if (path.Contains("Prefabs/Ch") || path.Contains("Prefabs/Effect"))
                 continue;
             string text = File.ReadAllText(path);
-            var text_matchs = TextRegex.Matches(text);
-            Data data;
-            foreach (Match tm in text_matchs)
+            var textMatchs = TextRegex.Matches(text);
+            foreach (Match tm in textMatchs)
             {
-                string txt = tm.Groups[1].Value;
-                if (dict.TryGetValue(txt, out data))
+                var txt = tm.Groups[1].Value;
+                if (dict.TryGetValue(txt, out var data))
                 {
                     if (!data.assetPaths.Contains(path))
                         data.assetPaths.Add(path);
                 }
                 else
                 {
-                    string chn_txt = UnicodeToChinese(txt);
-                    data = new Data(txt, chn_txt);
+                    var chnTxt = UnicodeToChinese(txt);
+                    data = new Data(txt, chnTxt);
                     data.assetPaths.Add(path);
                     dict.Add(txt, data);
                 }
             }
-            EditorUtility.DisplayProgressBar("查找图片索引...", path, (float)i / dirs.Length);
+            EditorUtility.DisplayProgressBar("查找图片索引...", path, (float) i / len);
         }
         EditorUtility.ClearProgressBar();
     }
 
-    void ToCSV(Dictionary<string, Data> dict)
+    private void ToCSV(Dictionary<string, Data> dict)
     {
         var filename = Path.Combine(projectPath, "预设文字.csv");
-        using (StreamWriter w = new StreamWriter(filename, false, Encoding.UTF8))
+        using var w = new StreamWriter(filename, false, Encoding.UTF8);
+        foreach (var item in dict)
         {
-            foreach (var item in dict)
-            {
-                w.WriteLine(string.Format("{0},{1}",
-                    item.Key,
-                    item.Value.cn_text));
-            }
-            w.Close();
+            w.WriteLine($"{item.Key},{item.Value.cn_text}");
         }
+        w.Close();
     }
 
-    void FromCSV(out Dictionary<string, Data> dict)
+    private void FromCSV(out Dictionary<string, Data> dict)
     {
         dict = new Dictionary<string, Data>();
         var filename = Path.Combine(projectPath, "预设文字.csv");
-        Dictionary<string, int> needLoadAbs = new Dictionary<string, int>();
-        using (StreamReader sr = new StreamReader(filename))
+        //var needLoadAbs = new Dictionary<string, int>();
+        using var sr = new StreamReader(filename);
+        string line;
+        while ((line = sr.ReadLine()) != null)
         {
-            string line;
-            while ((line = sr.ReadLine()) != null)
-            {
-                line = line.Replace("\n", "");
-                if (line.StartsWith("#"))
-                    continue;
-                var tempStrs = line.Split(',');
-                Data data = new Data(tempStrs[0], tempStrs[1]);
-                dict.Add(tempStrs[0], data);
-            }
+            line = line.Replace("\n", "");
+            if (line.StartsWith("#"))
+                continue;
+            var lines = line.Split(',');
+            var data = new Data(lines[0], lines[1]);
+            dict.Add(lines[0], data);
         }
     }
 
-    GameObject GetSceneObject(string name, out bool hasCanvas)
+    private GameObject GetSceneObject(string name, out bool hasCanvas)
     {
         hasCanvas = false;
         if (TempParent != null)
