@@ -27,7 +27,7 @@ public static class GameViewHelper
     [MenuItem("Tools/GameView/AddIPhoneXSize")]
     public static void AddIPhoneXSize()
     {
-        var index = FindSize(GameViewSizeGroupType.Standalone, 39, 18);
+        var index = FindSize(39, 18);
         if (index >= 0)
         {
             SetSize(index);
@@ -69,13 +69,13 @@ public static class GameViewHelper
         addCustomSize.Invoke(group, new object[] {newSize});
     }
 
-    public static int FindSize(GameViewSizeGroupType sizeGroupType, string text)
+    public static int FindSize(string text)
     {
         // GameViewSizes group = gameViewSizesInstance.GetGroup(sizeGroupType);
         // string[] texts = group.GetDisplayTexts();
         // for loop...
 
-        var group = GetGroup(sizeGroupType);
+        var group = GetGroup(GetCurrentGroupType());
         var getDisplayTexts = group.GetType().GetMethod("GetDisplayTexts");
         var displayTexts = getDisplayTexts.Invoke(group, null) as string[];
         for (int i = 0; i < displayTexts.Length; i++)
@@ -96,14 +96,14 @@ public static class GameViewHelper
         return -1;
     }
 
-    public static int FindSize(GameViewSizeGroupType sizeGroupType, int width, int height)
+    public static int FindSize(int width, int height)
     {
         // goal:
         // GameViewSizes group = gameViewSizesInstance.GetGroup(sizeGroupType);
         // int sizesCount = group.GetBuiltinCount() + group.GetCustomCount();
         // iterate through the sizes via group.GetGameViewSize(int index)
 
-        var group = GetGroup(sizeGroupType);
+        var group = GetGroup(GetCurrentGroupType());
         var groupType = group.GetType();
         var getBuiltinCount = groupType.GetMethod("GetBuiltinCount");
         var getCustomCount = groupType.GetMethod("GetCustomCount");
