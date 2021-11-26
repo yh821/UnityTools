@@ -146,6 +146,23 @@ namespace Common
         }
 
         /// <summary>
+        /// 获取场景里实例的路径
+        /// </summary>
+        /// <param name="go"></param>
+        /// <returns></returns>
+        public static string GetSceneGameObjectPath(GameObject go)
+        {
+            var t = go.transform;
+            var path = go.name;
+            while (t.parent != null)
+            {
+                path = t.parent.name + "/" + path;
+                t = t.parent;
+            }
+            return path;
+        }
+
+        /// <summary>
         /// 检查某文件夹路径是否存在，如不存在，创建
         /// </summary>
         /// <param name="path"></param>

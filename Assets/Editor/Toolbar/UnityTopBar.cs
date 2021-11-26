@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Common;
 using UnityEditor;
@@ -106,24 +105,34 @@ public class UnityTopBar
     private static void SceneCheckList()
     {
         var content = new System.Text.StringBuilder();
-        var scene = EditorSceneManager.GetActiveScene();
+        var scene = SceneManager.GetActiveScene();
 
-        var gameObjects = new List<GameObject>();
+        var missingPrefabList = new List<GameObject>();
         var roots = scene.GetRootGameObjects();
         foreach(var go in roots)
         {
-            var children = go.GetComponentsInChildren<Transform>(true);
-            foreach(var child in children)
+            //删除第一层空节点
+            if (go.transform.childCount == 0)
             {
-                gameObjects.Add(child.gameObject);
+                var com = go.GetComponentsInChildren<Component>();
+                if (com.Length <= 1)
+                {
+                    Debug.Log($"删除空节点: <color=yellow>{go.name}</color>");
+                    Object.DestroyImmediate(go);
+                    continue;
+                }
             }
+
+            //收集MissingPrefab的实例
+            WalkNode(go.transform, missingPrefabList);
         }
 
-        foreach(var go in gameObjects)
+        //清除MissingPrefab的实例
+        foreach(var go in missingPrefabList)
         {
-            Debug.Log(go.name);
+            Debug.Log($"删除MissingPrefab: <color=yellow>{FileHelper.GetSceneGameObjectPath(go)}</color>");
+            Object.DestroyImmediate(go);
         }
-
 
         //是否烘培
         if(Lightmapping.lightingDataAsset == null)
@@ -159,4 +168,20 @@ public class UnityTopBar
 
         EditorSceneManager.SaveScene(scene);
     }
+
+    private static void WalkNode(Transform parent, List<GameObject> missingList)
+    {
+        if(PrefabUtility.IsPrefabAssetMissing(parent.gameObject))
+        {
+            missingList.Add(parent.gameObject);
+            return;
+        }
+        if (parent.childCount == 0)
+            return;
+        for(int i = 0, len = parent.childCount; i < len; i++)
+        {
+            WalkNode(parent.GetChild(i), missingList);
+        }
+    }
+
 }
