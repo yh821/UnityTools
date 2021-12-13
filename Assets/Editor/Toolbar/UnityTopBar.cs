@@ -98,7 +98,7 @@ public class UnityTopBar
             }
         }
 
-            GUI.color = Color.white;
+        GUI.color = Color.white;
         GUILayout.FlexibleSpace();
     }
 

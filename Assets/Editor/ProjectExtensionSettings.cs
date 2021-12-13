@@ -23,7 +23,7 @@ public class ProjectExtensionSettings
 public class EditorCustom
 {
     public string writablePath = "LocalFile";
-    public string logPath = "LocalFile";
+    public string logPath = "Logs";
     public string cachePath = "Cache";
 
     public static EditorCustom LoadOrCreateIfNoExit(string path)

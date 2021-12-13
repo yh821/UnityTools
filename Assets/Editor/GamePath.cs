@@ -74,10 +74,10 @@ namespace Common
                 writableAssetUrl = "file://" + writablePath;
 
                 logPath = Path.Combine(rootPath, ProjectExtensionSettings.editorCustom.logPath);
-                cachePath = Path.Combine(rootPath, ProjectExtensionSettings.editorCustom.cachePath);
+                //cachePath = Path.Combine(rootPath, ProjectExtensionSettings.editorCustom.cachePath);
 
                 FileHelper.CreateDirectory(logPath);
-                FileHelper.CreateDirectory(cachePath);
+                //FileHelper.CreateDirectory(cachePath);
             }
             else
             {
@@ -109,8 +109,8 @@ namespace Common
             streamingAssetsAssetBundleUrl = streamingAssetsUrl + "/" + platformName;
             streamingAssetsAssetBundlePath = streamingAssetsPath + "/" + platformName;
 
-            FileHelper.CreateDirectory(writablePath);
-            FileHelper.CreateDirectory(writableAssetBundlePath);
+            //FileHelper.CreateDirectory(writablePath);
+            //FileHelper.CreateDirectory(writableAssetBundlePath);
         }
 
         public static void DumpPaths()
