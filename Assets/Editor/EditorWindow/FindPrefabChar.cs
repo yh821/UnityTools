@@ -44,7 +44,7 @@ public class FindPrefabChar : EditorWindow
     private static readonly Regex CodeRegex = new Regex(@"((\\u\w{4})+)", RegexOptions.Singleline);
     private static readonly Regex ChnRegex = new Regex(@"([\u4E00-\u9FA5]+)", RegexOptions.Singleline);
 
-    public const string PathListKey = "FindPrefabChar.PathList";
+    public const string PathListKey = "FindPrefabChar.CommitPathList";
     public const string DefaultPath = "Assets/Game/UIs";
     public List<string> PathList = null;
     private SerializedObject mPathSerializedObject;
@@ -140,7 +140,7 @@ public class FindPrefabChar : EditorWindow
         if (string.IsNullOrEmpty(PathList[0]))
             PathList[0] = DefaultPath;
         mPathSerializedObject = new SerializedObject(this);
-        mPathSerializedProperty = mPathSerializedObject.FindProperty("PathList");
+        mPathSerializedProperty = mPathSerializedObject.FindProperty("CommitPathList");
         mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
         {
             drawHeaderCallback = rect => GUI.Label(rect, "路径列表:"),

@@ -5,6 +5,37 @@ using UnityEngine;
 
 public static class GameViewHelper
 {
+	[MenuItem("Tools/GameView/AddIPhoneXSize")]
+	public static void AddIPhoneXSize()
+	{
+		var index = FindSize(39, 18, out var count);
+		if (index >= 0)
+		{
+			SetSize(index);
+		}
+		else
+		{
+			AddCustomSize(GameViewSizeType.AspectRatio, 39, 18, "iPhoneX");
+			SetSize(count);
+		}
+	}
+	
+
+    [MenuItem("Tools/GameView/AddDefaultSize")]
+    public static void AddDefaultSize()
+    {
+        var index = FindSize(1334, 768, out var count);
+        if (index >= 0)
+        {
+            SetSize(index);
+        }
+        else
+        {
+            AddCustomSize(GameViewSizeType.FixedResolution, 1334, 768, "Default");
+            SetSize(count);
+        }
+    }
+
     public enum GameViewSizeType
     {
         AspectRatio,
@@ -22,21 +53,6 @@ public static class GameViewHelper
         var instanceProp = singleType.GetProperty("instance");
         getGroup = sizesType.GetMethod("GetGroup");
         gameViewSizesInstance = instanceProp.GetValue(null, null);
-    }
-
-    [MenuItem("Tools/GameView/AddIPhoneXSize")]
-    public static void AddIPhoneXSize()
-    {
-        var index = FindSize(39, 18);
-        if (index >= 0)
-        {
-            SetSize(index);
-        }
-        else
-        {
-            AddCustomSize(GameViewSizeType.AspectRatio, 39, 18, "iPhoneX");
-            SetSize(index + 1);
-        }
     }
 
     public static void SetSize(int index)
@@ -96,7 +112,7 @@ public static class GameViewHelper
         return -1;
     }
 
-    public static int FindSize(int width, int height)
+    public static int FindSize(int width, int height, out int count)
     {
         // goal:
         // GameViewSizes group = gameViewSizesInstance.GetGroup(sizeGroupType);
@@ -107,13 +123,13 @@ public static class GameViewHelper
         var groupType = group.GetType();
         var getBuiltinCount = groupType.GetMethod("GetBuiltinCount");
         var getCustomCount = groupType.GetMethod("GetCustomCount");
-        int sizesCount = (int) getBuiltinCount.Invoke(group, null) + (int) getCustomCount.Invoke(group, null);
+        count = (int) getBuiltinCount.Invoke(group, null) + (int) getCustomCount.Invoke(group, null);
         var getGameViewSize = groupType.GetMethod("GetGameViewSize");
         var gvsType = getGameViewSize.ReturnType;
         var widthProp = gvsType.GetProperty("width");
         var heightProp = gvsType.GetProperty("height");
         var indexValue = new object[1];
-        for (int i = 0; i < sizesCount; i++)
+        for (int i = 0; i < count; i++)
         {
             indexValue[0] = i;
             var size = getGameViewSize.Invoke(group, indexValue);
@@ -126,7 +142,7 @@ public static class GameViewHelper
         return -1;
     }
 
-    static object GetGroup(GameViewSizeGroupType type)
+    private static object GetGroup(GameViewSizeGroupType type)
     {
         return getGroup.Invoke(gameViewSizesInstance, new object[] {(int) type});
     }

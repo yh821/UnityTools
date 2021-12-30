@@ -10,7 +10,7 @@ using UnityToolbarExtender;
 [InitializeOnLoad]
 public class UnityTopBar
 {
-    public const string ProjName = "S1:uc03_cn";
+    public const string ProjName = "UnityTools";
 
     private static GUIStyle _style;
     private static bool _needCheckScene = false;
@@ -52,9 +52,14 @@ public class UnityTopBar
             _style = new GUIStyle("BoldLabel") { fontSize = 16 };
         }
 
+        if (GUILayout.Button(EditorGUIUtility.IconContent("SettingsIcon", "svn路径配置"), GUILayout.Height(22)))
+        {
+	        SVNHelper.OpenPathOption();
+        }
+
         if (GUILayout.Button(new GUIContent("提交", "提交unity工程svn"), GUILayout.Height(22)))
         {
-            SVNHelper.CommitToSVN();
+            SVNHelper.ExecuteCommand(SVNHelper.Command.Commit, SVNHelper.GetCommitPaths());
         }
 
         GUI.color = new Color(0.33f,0.75f,1f);
@@ -62,7 +67,7 @@ public class UnityTopBar
         {
             if (EditorApplication.isPlaying)
                 EditorApplication.isPaused = true;
-            SVNHelper.UpdateFromSVN();
+            SVNHelper.ExecuteCommand(SVNHelper.Command.Update, SVNHelper.GetUpdatePaths());
         }
         GUI.color = Color.white;
 
@@ -130,7 +135,7 @@ public class UnityTopBar
         //清除MissingPrefab的实例
         foreach(var go in missingPrefabList)
         {
-            Debug.Log($"删除MissingPrefab: <color=yellow>{FileHelper.GetSceneGameObjectPath(go)}</color>");
+            Debug.Log($"删除MissingPrefab: <color=yellow>{go.ScenePath()}</color>");
             Object.DestroyImmediate(go);
         }
 

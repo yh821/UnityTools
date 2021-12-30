@@ -3,7 +3,8 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using UObject = UnityEngine.Object;
+using Common;
+//using UObject = UnityEngine.Object;
 using Newtonsoft.Json;
 
 public class TexturePackerFlag : EditorWindow
@@ -264,11 +265,11 @@ public class TexturePackerFlag : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         #region size
-        if (data.size >= FolderTools.RED_LIMIT)
+        if (data.size >= IOHelper.RED_LIMIT)
             GUI.color = Color.red;
-        else if (data.size >= FolderTools.ORANGE_LIMIT)
+        else if (data.size >= IOHelper.ORANGE_LIMIT)
             GUI.color = new Color(1f, 0.5f, 0);
-        else if (data.size >= FolderTools.YELLOW_LIMIT)
+        else if (data.size >= IOHelper.YELLOW_LIMIT)
             GUI.color = Color.yellow;
         EditorGUILayout.LabelField(string.Format("{0}: {1} x {2}",data.name,data.texture.width,data.texture.height));
         GUI.color = Color.white;

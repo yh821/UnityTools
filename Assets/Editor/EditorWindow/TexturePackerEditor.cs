@@ -100,7 +100,7 @@ public class TexturePackerEditor : EditorWindow
         if (GUILayout.Button("散图路径", GUILayout.MaxWidth(100)))
         {
             if (!string.IsNullOrEmpty(particlePath))
-                FolderTools.OpenFolder(particlePath);
+                IOHelper.OpenFolder(particlePath);
         }
         #endregion
         #region 更新
@@ -135,11 +135,11 @@ public class TexturePackerEditor : EditorWindow
         if (inputTexture != null)
         {
             var size = inputTexture.width * inputTexture.height;
-            if (size >= FolderTools.RED_LIMIT)
+            if (size >= IOHelper.RED_LIMIT)
                 GUI.color = Color.red;
-            else if (size >= FolderTools.ORANGE_LIMIT)
+            else if (size >= IOHelper.ORANGE_LIMIT)
                 GUI.color = new Color(1f, 0.5f, 0);
-            else if (size >= FolderTools.YELLOW_LIMIT)
+            else if (size >= IOHelper.YELLOW_LIMIT)
                 GUI.color = Color.yellow;
             EditorGUILayout.LabelField(inputTexture.name + "  " + inputTexture.width + "*" + inputTexture.height);
             GUI.color = Color.white;
@@ -213,13 +213,13 @@ public class TexturePackerEditor : EditorWindow
                     #region 打开
                     if (GUILayout.Button("打开", GUILayout.MaxWidth(30)))
                     {
-                        FolderTools.OpenFile(dirs[i]);
+                        IOHelper.OpenFile(dirs[i]);
                     }
                     #endregion
                     #region 选中
                     if (GUILayout.Button("选中", GUILayout.MaxWidth(30)))
                     {
-                        FolderTools.SelectFile(dirs[i]);
+                        IOHelper.SelectFile(dirs[i]);
                     }
                     #endregion
                     #region 删除
@@ -227,7 +227,7 @@ public class TexturePackerEditor : EditorWindow
                     {
                         if (GUILayout.Button("删除", GUILayout.MaxWidth(30)))
                         {
-                            FolderTools.DeleteFile(dirs[i]);
+                            IOHelper.DeleteFile(dirs[i]);
                         }
                     }
                     #endregion
@@ -266,13 +266,13 @@ public class TexturePackerEditor : EditorWindow
                         #region 打开
                         if (GUILayout.Button("打开", GUILayout.MaxWidth(30)))
                         {
-                            FolderTools.OpenFile(dirs[i]);
+                            IOHelper.OpenFile(dirs[i]);
                         }
                         #endregion
                         #region 选中
                         if (GUILayout.Button("选中", GUILayout.MaxWidth(30)))
                         {
-                            FolderTools.OpenFolder(dirs[i]);
+                            IOHelper.OpenFolder(dirs[i]);
                         }
                         #endregion
                         #region 删除
@@ -280,7 +280,7 @@ public class TexturePackerEditor : EditorWindow
                         {
                             if (GUILayout.Button("删除", GUILayout.MaxWidth(30)))
                             {
-                                FolderTools.DeleteFile(dirs[i]);
+                                IOHelper.DeleteFile(dirs[i]);
                             }
                         }
                         #endregion

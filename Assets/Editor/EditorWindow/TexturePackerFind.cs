@@ -392,7 +392,7 @@ public class TexturePackerFind : EditorWindow
         if (GUILayout.Button("散图目录", GUILayout.MaxWidth(64)))
         {
             if (!string.IsNullOrEmpty(option.particlePath))
-                FolderTools.OpenFolder(curPath + option.particlePath);
+                IOHelper.OpenFolder(curPath + option.particlePath);
         }
         GUI.color = Color.white;
         #endregion
@@ -411,13 +411,13 @@ public class TexturePackerFind : EditorWindow
         #region 打开图集
         if (GUILayout.Button("打开图集", GUILayout.MaxWidth(64)))
         {
-            FolderTools.OpenFile(data.assetPath);
+            IOHelper.OpenFile(data.assetPath);
         }
         #endregion
         #region 选中图集
         if (GUILayout.Button("选中图集", GUILayout.MaxWidth(64)))
         {
-            FolderTools.SelectFile(data.assetPath);
+            IOHelper.SelectFile(data.assetPath);
         }
         #endregion
         EditorGUILayout.LabelField(data.assetPath);//图集路径
@@ -458,11 +458,11 @@ public class TexturePackerFind : EditorWindow
         }
         #endregion
         #region size
-        if (data.size >= FolderTools.RED_LIMIT)
+        if (data.size >= IOHelper.RED_LIMIT)
             GUI.color = Color.red;
-        else if (data.size >= FolderTools.ORANGE_LIMIT)
+        else if (data.size >= IOHelper.ORANGE_LIMIT)
             GUI.color = new Color(1f, 0.5f, 0);
-        else if (data.size >= FolderTools.YELLOW_LIMIT)
+        else if (data.size >= IOHelper.YELLOW_LIMIT)
             GUI.color = Color.yellow;
         EditorGUILayout.LabelField(data.name + "  " + data.texture.width + "*" + data.texture.height);
         GUI.color = Color.white;
