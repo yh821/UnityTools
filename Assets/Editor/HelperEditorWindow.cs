@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 using Common;
@@ -187,7 +184,39 @@ public class HelperEditorWindow : EditorWindow
 				}
 			}
 			EditorGUILayout.EndVertical();
-		}
+
+			GUILayout.Space(SPACE_SIZE);
+			EditorGUILayout.BeginHorizontal();
+			{
+				if (GUILayout.Button("提示弹窗"))
+				{
+					if(EditorUtility.DisplayDialog("title", "message", "ok"))
+						Debug.Log("click ok");
+				}
+				if (GUILayout.Button("提示弹窗"))
+				{
+					if (EditorUtility.DisplayDialog("title", "message", "ok", "cancel"))
+						Debug.Log("click ok");
+				}
+				if (GUILayout.Button("选择弹窗"))
+				{
+					var id = EditorUtility.DisplayDialogComplex("title", "message", "id=0", "id=1", "id=2");
+					switch (id)
+					{
+                        case 0:
+	                        Debug.Log("click ok");
+                            break;
+                        case 1:
+	                        Debug.Log("click cancel");
+	                        break;
+                        case 2:
+	                        Debug.Log("click alt");
+	                        break;
+                    }
+				}
+            }
+			EditorGUILayout.EndHorizontal();
+        }
 		EditorGUILayout.EndScrollView();
 	}
 }

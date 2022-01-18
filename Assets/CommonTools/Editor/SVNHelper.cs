@@ -8,305 +8,367 @@ using UnityEngine;
 
 namespace Common
 {
-    public class SVNHelper
-    {
-        #region 命令枚举
+	public class SVNHelper
+	{
+		#region 命令枚举
 
-        public enum Command
-        {
-            Log,
-            CheckOut,
-            Update,
-            Commit,
-            Add,
-            Revert,
-            CleanUp,
-            Resolve, //解决
-            Remove,
-            Rename,
-            Diff,
-            Ignore,
-            Lock,
-            UnLock,
-        }
+		public enum Command
+		{
+			Log,
+			CheckOut,
+			Update,
+			Commit,
+			Add,
+			Revert,
+			CleanUp,
+			Resolve, //解决
+			Remove,
+			Rename,
+			Diff,
+			Ignore,
+			Lock,
+			UnLock,
+		}
 
-        #endregion
+		#endregion
 
-        private static string _defaultProjectPath = string.Empty;
+		private static string _defaultProjectPath = string.Empty;
 
-        private static string DefaultProjectPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_defaultProjectPath))
-                {
-                    var dir = new DirectoryInfo(Application.dataPath + "../");
-                    _defaultProjectPath = dir.Parent.FullName.Replace('/', '\\');
-                }
+		private static string DefaultProjectPath
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_defaultProjectPath))
+				{
+					var dir = new DirectoryInfo(Application.dataPath + "../");
+					_defaultProjectPath = dir.Parent.FullName.Replace('/', '\\');
+				}
 
-                return _defaultProjectPath;
-            }
-        }
+				return _defaultProjectPath;
+			}
+		}
 
-        /// <summary>
-        /// 执行SVN命令
-        /// </summary>
-        /// <param name="cmd">命令</param>
-        /// <param name="path">操作路径</param>
-        /// <param name="closeonend">0:不自动关闭,1:如果没发生错误则自动关闭对话框,
-        /// 2:如果没发生错误和冲突则自动关闭对话框,3:如果没有错误、冲突和合并，会自动关闭</param>
-        public static void ExecuteCommand(Command cmd, string path, int closeonend = -1)
-        {
-            var cmdStr = "/c tortoiseproc.exe /command:{0} /path:\"{1}\"";
-            cmdStr = string.Format(cmdStr, cmd.ToString().ToLower(), path);
-            if (closeonend >= 0 && closeonend <= 3)
-                cmdStr += $" /closeonend:{closeonend}";
-            var info = new ProcessStartInfo("cmd.exe", cmdStr);
-            info.WindowStyle = ProcessWindowStyle.Hidden;
-            Process.Start(info);
-        }
+		/// <summary>
+		/// 执行SVN命令
+		/// </summary>
+		/// <param name="cmd">命令</param>
+		/// <param name="path">操作路径</param>
+		/// <param name="closeonend">0:不自动关闭,1:如果没发生错误则自动关闭对话框,
+		/// 2:如果没发生错误和冲突则自动关闭对话框,3:如果没有错误、冲突和合并，会自动关闭</param>
+		public static void ExecuteCommand(Command cmd, string path, int closeonend = -1)
+		{
+			var cmdStr = "/c tortoiseproc.exe /command:{0} /path:\"{1}\"";
+			cmdStr = string.Format(cmdStr, cmd.ToString().ToLower(), path);
+			if (closeonend >= 0 && closeonend <= 3)
+				cmdStr += $" /closeonend:{closeonend}";
+			var info = new ProcessStartInfo("cmd.exe", cmdStr);
+			info.WindowStyle = ProcessWindowStyle.Hidden;
+			Process.Start(info);
+		}
 
-        public static void ExecuteCommand(Command cmd, List<string> paths, int closeonend = -1)
-        {
-	        var sb = new StringBuilder();
-	        for (int i = 0, len = paths.Count; i < len; i++)
-	        {
-		        if (i == 0)
-			        sb.Append(paths[i]);
-		        else
-			        sb.Append('*').Append(paths[i]);
-	        }
-	        ExecuteCommand(cmd, sb.ToString(), closeonend);
-        }
+		public static void ExecuteCommand(Command cmd, List<string> paths, int closeonend = -1)
+		{
+			var pathDict = new Dictionary<string, List<string>>();
+			foreach (var path in paths)
+			{
+				if (path.Length < 2 || path[1] != ':')
+					continue;
+				var disk = path.Substring(0, 2).ToLower();
+				if (pathDict.TryGetValue(disk, out var pathList))
+					pathList.Add(path);
+				else
+				{
+					pathList = new List<string> {path};
+					pathDict.Add(disk, pathList);
+				}
+			}
 
-        #region 菜单选项
+			foreach (var pathList in pathDict.Values)
+			{
+				var sb = new StringBuilder();
+				for (int i = 0, len = pathList.Count; i < len; i++)
+				{
+					if (i == 0)
+						sb.Append(pathList[i]);
+					else
+						sb.Append('*').Append(pathList[i]);
+				}
 
-        [MenuItem("Tools/SVN/更新 %&e")]
-        public static void UpdateFromSVN()
-        {
-            ExecuteCommand(Command.Update, DefaultProjectPath, 0);
-        }
+				ExecuteCommand(cmd, sb.ToString(), closeonend);
+			}
+		}
 
-        [MenuItem("Tools/SVN/提交 %&r")]
-        public static void CommitToSVN()
-        {
-            ExecuteCommand(Command.Commit, DefaultProjectPath);
-        }
+		#region 菜单选项
 
-        [MenuItem("Tools/SVN/清理")]
-        public static void CleanUpFromSVN()
-        {
-            ExecuteCommand(Command.CleanUp, DefaultProjectPath);
-        }
+		[MenuItem("Tools/SVN/更新 %&e")]
+		public static void UpdateFromSVN()
+		{
+			ExecuteCommand(Command.Update, DefaultProjectPath, 0);
+		}
 
-        [MenuItem("Tools/SVN/解决")]
-        public static void ResolveFromSVN()
-        {
-            ExecuteCommand(Command.Resolve, DefaultProjectPath);
-        }
+		[MenuItem("Tools/SVN/提交 %&r")]
+		public static void CommitToSVN()
+		{
+			ExecuteCommand(Command.Commit, DefaultProjectPath);
+		}
 
-        #endregion
+		[MenuItem("Tools/SVN/清理")]
+		public static void CleanUpFromSVN()
+		{
+			ExecuteCommand(Command.CleanUp, DefaultProjectPath);
+		}
 
-        #region 右键选项
+		[MenuItem("Tools/SVN/解决")]
+		public static void ResolveFromSVN()
+		{
+			ExecuteCommand(Command.Resolve, DefaultProjectPath);
+		}
 
-        private static void ExecuteSelectionSvnCmd(Command cmd, int closeonend = -1)
-        {
-            ExecuteSelectionSvnCmd(Selection.activeObject, cmd, closeonend);
-        }
+		#endregion
 
-        public static void ExecuteSelectionSvnCmd(Object obj, Command cmd, int closeonend = -1)
-        {
-            if (obj == null)
-                return;
+		#region 右键选项
 
-            string path = AssetDatabase.GetAssetOrScenePath(obj);
-            if (string.IsNullOrEmpty(path))
-                return;
+		private static void ExecuteSelectionSvnCmd(Command cmd, int closeonend = -1)
+		{
+			ExecuteSelectionSvnCmd(Selection.activeObject, cmd, closeonend);
+		}
 
-            path = Path.GetFullPath(path);
-            path = $"{path}*{path}.meta";
-            ExecuteCommand(cmd, path, closeonend);
-        }
+		public static void ExecuteSelectionSvnCmd(Object obj, Command cmd, int closeonend = -1)
+		{
+			if (obj == null)
+				return;
 
-        [MenuItem("Assets/SVN Command/Log")]
-        public static void SvnLogCommand()
-        {
-            ExecuteSelectionSvnCmd(Command.Log);
-        }
+			string path = AssetDatabase.GetAssetOrScenePath(obj);
+			if (string.IsNullOrEmpty(path))
+				return;
 
-        [MenuItem("Assets/SVN Command/Revert")]
-        public static void SvnRevertCommand()
-        {
-            ExecuteSelectionSvnCmd(Command.Revert, 3);
-        }
+			path = Path.GetFullPath(path);
+			path = $"{path}*{path}.meta";
+			ExecuteCommand(cmd, path, closeonend);
+		}
 
-        [MenuItem("Assets/SVN Command/Update")]
-        public static void SvnUpdateCommand()
-        {
-            ExecuteSelectionSvnCmd(Command.Update);
-        }
+		[MenuItem("Assets/SVN Command/Log")]
+		public static void SvnLogCommand()
+		{
+			ExecuteSelectionSvnCmd(Command.Log);
+		}
 
-        [MenuItem("Assets/SVN Command/Commit")]
-        public static void SvnCommitCommand()
-        {
-            ExecuteSelectionSvnCmd(Command.Commit);
-        }
+		[MenuItem("Assets/SVN Command/Revert")]
+		public static void SvnRevertCommand()
+		{
+			ExecuteSelectionSvnCmd(Command.Revert, 3);
+		}
 
-        [MenuItem("Assets/SVN Command/Add")]
-        public static void SvnAddCommand()
-        {
-            ExecuteSelectionSvnCmd(Command.Add);
-        }
+		[MenuItem("Assets/SVN Command/Update")]
+		public static void SvnUpdateCommand()
+		{
+			ExecuteSelectionSvnCmd(Command.Update);
+		}
 
-        [MenuItem("Assets/SVN Command/Remove")]
-        public static void SvnRemoveCommand()
-        {
-            ExecuteSelectionSvnCmd(Command.Remove);
-        }
+		[MenuItem("Assets/SVN Command/Commit")]
+		public static void SvnCommitCommand()
+		{
+			ExecuteSelectionSvnCmd(Command.Commit);
+		}
 
-        #endregion
+		[MenuItem("Assets/SVN Command/Add")]
+		public static void SvnAddCommand()
+		{
+			ExecuteSelectionSvnCmd(Command.Add);
+		}
 
-        [MenuItem("Tools/SVN/路径配置")]
-        public static void OpenPathOption()
-        {
-	        var win = EditorWindow.GetWindow<SVNHelperEditor>("SVN路径配置");
-	        win.InitPathGui();
-        }
+		[MenuItem("Assets/SVN Command/Remove")]
+		public static void SvnRemoveCommand()
+		{
+			ExecuteSelectionSvnCmd(Command.Remove);
+		}
 
-        public const string CommitPathKey = "SVNHelper.CommitPathList";
-        public const string UpdatePathKey = "SVNHelper.UpdatePathList";
+		#endregion
 
-        public static List<string> GetPaths(string content)
-        {
-	        var pathArray = content.Split('|');
-	        if (string.IsNullOrEmpty(pathArray[0]))
-		        pathArray[0] = DefaultProjectPath;
-	        return new List<string>(pathArray);
-        }
+		[MenuItem("Tools/SVN/路径配置")]
+		public static void OpenPathOption()
+		{
+			var win = EditorWindow.GetWindow<SVNHelperEditor>("SVN路径配置");
+			win.InitPathGui();
+		}
 
-        public static List<string> GetCommitPaths()
-        {
-	        return GetPaths(EditorPrefs.GetString(CommitPathKey));
-        }
+		public class PathOption
+		{
+			public List<string> commitPaths;
+			public List<string> updatePaths;
 
-        public static List<string> GetUpdatePaths()
-        {
-	        return GetPaths(EditorPrefs.GetString(UpdatePathKey));
-        }
-    }
+			public PathOption()
+			{
+				commitPaths = new List<string>();
+				updatePaths = new List<string>();
+			}
+		}
 
-    public class SVNHelperEditor : EditorWindow
-    {
-	    public List<string> CommitPathList;
-	    public List<string> UpdatePathList;
+		private const string OptionFile = "ProjectSettings/SVNPathOption.json";
 
-        private SerializedObject mPathSerializedObject;
-	    private SerializedProperty mCommitPathSerializedProperty;
-	    private ReorderableList mCommitPathReorderableList;
-	    private SerializedProperty mUpdatePathSerializedProperty;
-	    private ReorderableList mUpdatePathReorderableList;
+		private static PathOption _option;
+		public static PathOption Option => _option ??= LoadOrCreate(OptionFile);
 
-        private const int BtnWidth = 32;
-	    private const int Padding = 4;
-	    private const int WidthPadding = BtnWidth + Padding;
+		public static PathOption LoadOrCreate(string path)
+		{
+			PathOption option;
+			if (File.Exists(path))
+			{
+				using var reader = File.OpenText(path);
+				option = JsonUtility.FromJson<PathOption>(reader.ReadToEnd());
+			}
+			else
+			{
+				option = new PathOption();
+				SaveOption(option);
+			}
 
-        void OnLostFocus()
-	    {
-		    SavePath();
-	    }
+			return option;
+		}
 
-        void OnGUI()
-        {
-	        mCommitPathReorderableList?.DoLayoutList();
-	        mUpdatePathReorderableList?.DoLayoutList();
-        }
+		public static void SaveOption(PathOption pathOption)
+		{
+			using var jsonWriter = File.CreateText(OptionFile);
+			jsonWriter.Write(JsonUtility.ToJson(pathOption, true));
+		}
 
-        public void InitPathGui()
-	    {
-		    CommitPathList = SVNHelper.GetCommitPaths();
-		    UpdatePathList = SVNHelper.GetUpdatePaths();
-		    mPathSerializedObject = new SerializedObject(this);
+		public static void SaveOption(List<string> commitPaths, List<string> updatePaths)
+		{
+			SaveOption(new PathOption {commitPaths = commitPaths, updatePaths = updatePaths});
+		}
 
-		    mCommitPathSerializedProperty = mPathSerializedObject.FindProperty("CommitPathList");
-		    mCommitPathReorderableList = new ReorderableList(mPathSerializedObject, mCommitPathSerializedProperty)
-		    {
-			    drawHeaderCallback = rect => GUI.Label(rect, "提交路径:"),
-			    drawElementCallback = (rect, index, selected, focused) =>
-			    {
-				    var element = mCommitPathSerializedProperty.GetArrayElementAtIndex(index);
-				    if (GUI.Button(new Rect(rect.x, rect.y + 2, BtnWidth, rect.height - 4),
-					    EditorGUIUtility.IconContent("Folder Icon", "选择文件夹")))
-				    {
-					    var path = EditorUtility.OpenFolderPanel("选择提交文件夹", element.stringValue, "");
-					    SetPath(path, element);
-				    }
+		public static List<string> GetCommitPaths()
+		{
+			var paths = Option.commitPaths;
+			if (paths.Count <= 0)
+				paths.Add(DefaultProjectPath);
+			return paths;
+		}
 
-				    if (GUI.Button(new Rect(rect.x + BtnWidth + Padding, rect.y + 2, BtnWidth, rect.height - 4),
-					    EditorGUIUtility.IconContent("TextAsset Icon", "选择文件")))
-				    {
-					    var path = EditorUtility.OpenFilePanel("选择提交文件", element.stringValue, "*.*");
-					    SetPath(path, element);
-				    }
+		public static List<string> GetUpdatePaths()
+		{
+			var paths = Option.updatePaths;
+			if (paths.Count <= 0)
+				paths.Add(DefaultProjectPath);
+			return paths;
+		}
+	}
 
-				    EditorGUI.LabelField(new Rect(rect.x + WidthPadding * 2, rect.y, rect.width - WidthPadding * 2, rect.height),
-					    element.stringValue);
-			    }
-		    };
+	public class SVNHelperEditor : EditorWindow
+	{
+		public List<string> CommitPathList;
+		public List<string> UpdatePathList;
 
-		    mUpdatePathSerializedProperty = mPathSerializedObject.FindProperty("UpdatePathList");
-		    mUpdatePathReorderableList = new ReorderableList(mPathSerializedObject, mUpdatePathSerializedProperty)
-		    {
-			    drawHeaderCallback = rect => GUI.Label(rect, "更新路径:"),
-			    drawElementCallback = (rect, index, selected, focused) =>
-			    {
-				    var element = mUpdatePathSerializedProperty.GetArrayElementAtIndex(index);
-				    if (GUI.Button(new Rect(rect.x, rect.y + 2, BtnWidth, rect.height - 4),
-					    EditorGUIUtility.IconContent("Folder Icon", "选择文件夹")))
-				    {
-					    var path = EditorUtility.OpenFolderPanel("选择更新文件夹", element.stringValue, "");
-					    SetPath(path, element);
-				    }
+		private SerializedObject mPathSerializedObject;
+		private SerializedProperty mCommitPathSerializedProperty;
+		private ReorderableList mCommitPathReorderableList;
+		private SerializedProperty mUpdatePathSerializedProperty;
+		private ReorderableList mUpdatePathReorderableList;
 
-				    if (GUI.Button(new Rect(rect.x + BtnWidth + Padding, rect.y + 2, BtnWidth, rect.height - 4),
-					    EditorGUIUtility.IconContent("TextAsset Icon", "选择文件")))
-				    {
-					    var path = EditorUtility.OpenFilePanel("选择更新文件", element.stringValue, "*.*");
-					    SetPath(path, element);
-				    }
+		private const int BtnWidth = 32;
+		private const int Padding = 4;
+		private const int WidthPadding = BtnWidth + Padding;
 
-				    EditorGUI.LabelField(new Rect(rect.x + WidthPadding * 2, rect.y, rect.width - WidthPadding * 2, rect.height),
-					    element.stringValue);
-			    }
-		    };
-        }
+		void OnLostFocus()
+		{
+			SavePath();
+		}
 
-	    private void SetPath(string path, SerializedProperty element)
-	    {
-		    if (!string.IsNullOrEmpty(path))
-		    {
-			    path = path.Replace('/', '\\');
-			    element.stringValue = path;
-		    }
-        }
+		void OnGUI()
+		{
+			mCommitPathReorderableList?.DoLayoutList();
+			mUpdatePathReorderableList?.DoLayoutList();
+		}
 
-	    private void SavePath()
-	    {
-		    mPathSerializedObject.ApplyModifiedProperties();
+		public void InitPathGui()
+		{
+			CommitPathList = SVNHelper.GetCommitPaths();
+			UpdatePathList = SVNHelper.GetUpdatePaths();
+			mPathSerializedObject = new SerializedObject(this);
 
-		    for (int i = 0; i < CommitPathList.Count; i++)
-		    {
-			    if (string.IsNullOrEmpty(CommitPathList[i]))
-				    CommitPathList.RemoveAt(i);
-		    }
-		    EditorPrefs.SetString(SVNHelper.CommitPathKey, string.Join("|", CommitPathList));
+			mCommitPathSerializedProperty = mPathSerializedObject.FindProperty("CommitPathList");
+			mCommitPathReorderableList = new ReorderableList(mPathSerializedObject, mCommitPathSerializedProperty)
+			{
+				drawHeaderCallback = rect => GUI.Label(rect, "提交路径:"),
+				drawElementCallback = (rect, index, selected, focused) =>
+				{
+					var element = mCommitPathSerializedProperty.GetArrayElementAtIndex(index);
+					if (GUI.Button(new Rect(rect.x, rect.y + 2, BtnWidth, rect.height - 4),
+						EditorGUIUtility.IconContent("Folder Icon", "选择文件夹")))
+					{
+						var path = EditorUtility.OpenFolderPanel("选择提交文件夹", element.stringValue, "");
+						SetPath(path, element);
+					}
 
-		    for (int i = 0; i < UpdatePathList.Count; i++)
-		    {
-			    if (string.IsNullOrEmpty(UpdatePathList[i]))
-				    UpdatePathList.RemoveAt(i);
-		    }
-		    EditorPrefs.SetString(SVNHelper.UpdatePathKey, string.Join("|", UpdatePathList));
-        }
+					if (GUI.Button(new Rect(rect.x + BtnWidth + Padding, rect.y + 2, BtnWidth, rect.height - 4),
+						EditorGUIUtility.IconContent("TextAsset Icon", "选择文件")))
+					{
+						var path = EditorUtility.OpenFilePanel("选择提交文件", element.stringValue, "*.*");
+						SetPath(path, element);
+					}
 
-    }
+					EditorGUI.LabelField(
+						new Rect(rect.x + WidthPadding * 2, rect.y, rect.width - WidthPadding * 2, rect.height),
+						element.stringValue);
+				}
+			};
+
+			mUpdatePathSerializedProperty = mPathSerializedObject.FindProperty("UpdatePathList");
+			mUpdatePathReorderableList = new ReorderableList(mPathSerializedObject, mUpdatePathSerializedProperty)
+			{
+				drawHeaderCallback = rect => GUI.Label(rect, "更新路径:"),
+				drawElementCallback = (rect, index, selected, focused) =>
+				{
+					var element = mUpdatePathSerializedProperty.GetArrayElementAtIndex(index);
+					if (GUI.Button(new Rect(rect.x, rect.y + 2, BtnWidth, rect.height - 4),
+						EditorGUIUtility.IconContent("Folder Icon", "选择文件夹")))
+					{
+						var path = EditorUtility.OpenFolderPanel("选择更新文件夹", element.stringValue, "");
+						SetPath(path, element);
+					}
+
+					if (GUI.Button(new Rect(rect.x + BtnWidth + Padding, rect.y + 2, BtnWidth, rect.height - 4),
+						EditorGUIUtility.IconContent("TextAsset Icon", "选择文件")))
+					{
+						var path = EditorUtility.OpenFilePanel("选择更新文件", element.stringValue, "*.*");
+						SetPath(path, element);
+					}
+
+					EditorGUI.LabelField(
+						new Rect(rect.x + WidthPadding * 2, rect.y, rect.width - WidthPadding * 2, rect.height),
+						element.stringValue);
+				}
+			};
+		}
+
+		private void SetPath(string path, SerializedProperty element)
+		{
+			if (!string.IsNullOrEmpty(path))
+			{
+				path = path.Replace('/', '\\');
+				element.stringValue = path;
+			}
+		}
+
+		private void SavePath()
+		{
+			mPathSerializedObject.ApplyModifiedProperties();
+
+			for (int i = 0; i < CommitPathList.Count; i++)
+			{
+				if (string.IsNullOrEmpty(CommitPathList[i]))
+					CommitPathList.RemoveAt(i);
+			}
+
+			for (int i = 0; i < UpdatePathList.Count; i++)
+			{
+				if (string.IsNullOrEmpty(UpdatePathList[i]))
+					UpdatePathList.RemoveAt(i);
+			}
+
+			SVNHelper.SaveOption(CommitPathList, UpdatePathList);
+		}
+
+	}
+
 }

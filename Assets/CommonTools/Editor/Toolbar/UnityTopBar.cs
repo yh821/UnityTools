@@ -52,7 +52,7 @@ public class UnityTopBar
             _style = new GUIStyle("BoldLabel") { fontSize = 16 };
         }
 
-        if (GUILayout.Button(EditorGUIUtility.IconContent("SettingsIcon", "svn¬∑æ∂≈‰÷√"), GUILayout.Height(22)))
+        if (GUILayout.Button(EditorGUIUtility.IconContent("SettingsIcon", "|svn¬∑æ∂≈‰÷√"), GUILayout.Height(22)))
         {
 	        SVNHelper.OpenPathOption();
         }
