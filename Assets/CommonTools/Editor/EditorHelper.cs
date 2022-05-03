@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace Common
@@ -58,5 +59,17 @@ namespace Common
         }
 
         #endregion
+
+        public static void SaveJson<T>(string file, T data) where T : class
+        {
+	        using var writer = File.CreateText(file);
+	        writer.Write(JsonUtility.ToJson(data, true));
+        }
+
+        public static T ReadJson<T>(string file) where T : class
+        {
+	        using var reader = File.OpenText(file);
+	        return JsonUtility.FromJson<T>(reader.ReadToEnd());
+        }
     }
 }

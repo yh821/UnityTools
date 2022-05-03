@@ -71,7 +71,7 @@ namespace Common
 			var pathDict = new Dictionary<string, List<string>>();
 			foreach (var path in paths)
 			{
-				if (path.Length < 2 || path[1] != ':')
+				if (path.StartsWith("#") || path.Length < 2 || path[1] != ':')
 					continue;
 				var disk = path.Substring(0, 2).ToLower();
 				if (pathDict.TryGetValue(disk, out var pathList))
@@ -214,27 +214,20 @@ namespace Common
 			PathOption option;
 			if (File.Exists(path))
 			{
-				using var reader = File.OpenText(path);
-				option = JsonUtility.FromJson<PathOption>(reader.ReadToEnd());
+				option = EditorHelper.ReadJson<PathOption>(path);
 			}
 			else
 			{
 				option = new PathOption();
-				SaveOption(option);
+				EditorHelper.SaveJson(OptionFile, option);
 			}
 
 			return option;
 		}
 
-		public static void SaveOption(PathOption pathOption)
-		{
-			using var jsonWriter = File.CreateText(OptionFile);
-			jsonWriter.Write(JsonUtility.ToJson(pathOption, true));
-		}
-
 		public static void SaveOption(List<string> commitPaths, List<string> updatePaths)
 		{
-			SaveOption(new PathOption {commitPaths = commitPaths, updatePaths = updatePaths});
+			EditorHelper.SaveJson(OptionFile, new PathOption {commitPaths = commitPaths, updatePaths = updatePaths});
 		}
 
 		public static List<string> GetCommitPaths()
@@ -267,7 +260,6 @@ namespace Common
 
 		private const int BtnWidth = 32;
 		private const int Padding = 4;
-		private const int WidthPadding = BtnWidth + Padding;
 
 		void OnLostFocus()
 		{
@@ -293,23 +285,35 @@ namespace Common
 				drawElementCallback = (rect, index, selected, focused) =>
 				{
 					var element = mCommitPathSerializedProperty.GetArrayElementAtIndex(index);
-					if (GUI.Button(new Rect(rect.x, rect.y + 2, BtnWidth, rect.height - 4),
+					var rectX = rect.x;
+					var path = element.stringValue;
+					var enable = !path.StartsWith("#");
+					var lastEnable = GUI.Toggle(new Rect(rectX, rect.y + 2, 16, rect.height - 4), enable, "");
+					if (lastEnable != enable)
+					{
+						if (lastEnable)
+							path = path.Substring(1);
+						else
+							path = "#" + path;
+						SetPath(path, element);
+					}
+
+					rectX += 16 + Padding;
+					if (GUI.Button(new Rect(rectX, rect.y + 2, BtnWidth, rect.height - 4),
 						EditorGUIUtility.IconContent("Folder Icon", "选择文件夹")))
 					{
-						var path = EditorUtility.OpenFolderPanel("选择提交文件夹", element.stringValue, "");
-						SetPath(path, element);
+						SetPath(EditorUtility.OpenFolderPanel("选择提交文件夹", element.stringValue, ""), element);
 					}
 
-					if (GUI.Button(new Rect(rect.x + BtnWidth + Padding, rect.y + 2, BtnWidth, rect.height - 4),
+					rectX += BtnWidth + Padding;
+					if (GUI.Button(new Rect(rectX, rect.y + 2, BtnWidth, rect.height - 4),
 						EditorGUIUtility.IconContent("TextAsset Icon", "选择文件")))
 					{
-						var path = EditorUtility.OpenFilePanel("选择提交文件", element.stringValue, "*.*");
-						SetPath(path, element);
+						SetPath(EditorUtility.OpenFilePanel("选择提交文件", element.stringValue, "*.*"), element);
 					}
 
-					EditorGUI.LabelField(
-						new Rect(rect.x + WidthPadding * 2, rect.y, rect.width - WidthPadding * 2, rect.height),
-						element.stringValue);
+					rectX += BtnWidth + Padding;
+					EditorGUI.LabelField(new Rect(rectX, rect.y, rect.width - rectX, rect.height), element.stringValue);
 				}
 			};
 
@@ -320,23 +324,35 @@ namespace Common
 				drawElementCallback = (rect, index, selected, focused) =>
 				{
 					var element = mUpdatePathSerializedProperty.GetArrayElementAtIndex(index);
-					if (GUI.Button(new Rect(rect.x, rect.y + 2, BtnWidth, rect.height - 4),
+					var rectX = rect.x;
+					var path = element.stringValue;
+					var enable = !path.StartsWith("#");
+					var lastEnable = GUI.Toggle(new Rect(rectX, rect.y + 2, 16, rect.height - 4), enable, "");
+					if (lastEnable != enable)
+					{
+						if (lastEnable)
+							path = path.Substring(1);
+						else
+							path = "#" + path;
+						SetPath(path, element);
+					}
+
+					rectX += 16 + Padding;
+					if (GUI.Button(new Rect(rectX, rect.y + 2, BtnWidth, rect.height - 4),
 						EditorGUIUtility.IconContent("Folder Icon", "选择文件夹")))
 					{
-						var path = EditorUtility.OpenFolderPanel("选择更新文件夹", element.stringValue, "");
-						SetPath(path, element);
+						SetPath(EditorUtility.OpenFolderPanel("选择更新文件夹", element.stringValue, ""), element);
 					}
 
-					if (GUI.Button(new Rect(rect.x + BtnWidth + Padding, rect.y + 2, BtnWidth, rect.height - 4),
+					rectX += BtnWidth + Padding;
+					if (GUI.Button(new Rect(rectX, rect.y + 2, BtnWidth, rect.height - 4),
 						EditorGUIUtility.IconContent("TextAsset Icon", "选择文件")))
 					{
-						var path = EditorUtility.OpenFilePanel("选择更新文件", element.stringValue, "*.*");
-						SetPath(path, element);
+						SetPath(EditorUtility.OpenFilePanel("选择更新文件", element.stringValue, "*.*"), element);
 					}
 
-					EditorGUI.LabelField(
-						new Rect(rect.x + WidthPadding * 2, rect.y, rect.width - WidthPadding * 2, rect.height),
-						element.stringValue);
+					rectX += BtnWidth + Padding;
+					EditorGUI.LabelField(new Rect(rectX, rect.y, rect.width - rectX, rect.height), element.stringValue);
 				}
 			};
 		}
