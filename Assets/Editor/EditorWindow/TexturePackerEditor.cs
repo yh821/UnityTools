@@ -239,7 +239,7 @@ public class TexturePackerEditor : EditorWindow
                         #region 引用
                         if (GUILayout.Button("引用", GUILayout.MaxWidth(40)))
                         {
-                            var win = GetWindow<FindPrefabImage>("图片找出处");
+	                        var win = PrefabTools.OpenWindow();
                             win.FindImageReference(obj as Sprite);
                         }
                         #endregion
@@ -292,7 +292,7 @@ public class TexturePackerEditor : EditorWindow
                     #region 引用
                     if (GUILayout.Button("引用", GUILayout.MaxWidth(40)))
                     {
-                        var win = GetWindow<FindPrefabImage>("图片找出处");
+	                    var win = PrefabTools.OpenWindow();
                         win.FindImageReference(objs[i] as Sprite);
                     }
                     #endregion

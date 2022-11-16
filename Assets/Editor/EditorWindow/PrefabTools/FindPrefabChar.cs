@@ -4,19 +4,18 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using UnityEditorInternal;
 using UnityEngine.UI;
 
-public class FindPrefabChar : EditorWindow
+public partial class PrefabTools : EditorWindow
 {
-    private class Data
+    private class CharData
     {
         public string text;
         public string cn_text;
         public List<string> assetPaths;
         public bool foldout;
 
-        public Data(string text)
+        public CharData(string text)
         {
             this.text = text;
             this.cn_text = ChineseToUnicode(text);
@@ -24,7 +23,7 @@ public class FindPrefabChar : EditorWindow
             foldout = false;
         }
 
-        public Data(string text, string chn_text)
+        public CharData(string text, string chn_text)
         {
             this.text = text;
             this.cn_text = chn_text;
@@ -33,23 +32,9 @@ public class FindPrefabChar : EditorWindow
         }
     }
 
-    [MenuItem("Tools/查找预设文字")]
-    public static void AddWindow()
-    {
-        var win = GetWindow<FindPrefabChar>("查找预设文字");
-        win.Init();
-    }
-
     private static readonly Regex TextRegex = new Regex(@"m_Text: ""(\S+)""", RegexOptions.Singleline);
     private static readonly Regex CodeRegex = new Regex(@"((\\u\w{4})+)", RegexOptions.Singleline);
     private static readonly Regex ChnRegex = new Regex(@"([\u4E00-\u9FA5]+)", RegexOptions.Singleline);
-
-    public const string PathListKey = "FindPrefabChar.CommitPathList";
-    public const string DefaultPath = "Assets/Game/UIs";
-    public List<string> PathList = null;
-    private SerializedObject mPathSerializedObject;
-    private SerializedProperty mPathSerializedProperty;
-    private ReorderableList mPathReorderableList;
 
     public static string StringToUnicode(string value)
     {
@@ -100,8 +85,8 @@ public class FindPrefabChar : EditorWindow
 
     private string projectPath = "";
     //private string findPath = "";
-    private Dictionary<string, Data> dict = new Dictionary<string, Data>();
-    private List<Data> searchData = new List<Data>();
+    private Dictionary<string, CharData> dict = new Dictionary<string, CharData>();
+    private List<CharData> searchData = new List<CharData>();
     private string searchKey = "";
     private string lastSearchKey = "";
 
@@ -110,66 +95,13 @@ public class FindPrefabChar : EditorWindow
 
     private Vector2 scroller = Vector2.zero;
 
-    private Transform TempParent
-    {
-        get
-        {
-            if (mTempParent == null)
-            {
-                var go = GameObject.Find("GUI_ROOT/TopCanvas");
-                if (go != null)
-                    mTempParent = go.transform;
-            }
-            return mTempParent;
-        }
-    }
-    Transform mTempParent = null;
-
-    private void Init()
+    private void InitFindChar()
     {
         projectPath = Application.dataPath.Replace("Assets", "");
         //findPath = Path.Combine(Application.dataPath, "Prefabs");
-
-        InitPathGui();
     }
 
-    private void InitPathGui()
-    {
-        var pathStr = EditorPrefs.GetString(PathListKey, DefaultPath);
-        PathList = new List<string>(pathStr.Split('|'));
-        if (string.IsNullOrEmpty(PathList[0]))
-            PathList[0] = DefaultPath;
-        mPathSerializedObject = new SerializedObject(this);
-        mPathSerializedProperty = mPathSerializedObject.FindProperty("CommitPathList");
-        mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
-        {
-            drawHeaderCallback = rect => GUI.Label(rect, "路径列表:"),
-            elementHeight = EditorGUIUtility.singleLineHeight,
-            drawElementCallback = (rect, index, selected, focused) =>
-            {
-                var element = mPathSerializedProperty.GetArrayElementAtIndex(index);
-                EditorGUI.PropertyField(rect, element, GUIContent.none);
-            }
-        };
-    }
-
-    private void SavePath()
-    {
-        mPathSerializedObject.ApplyModifiedProperties();
-        for (int i = 0; i < PathList.Count; i++)
-        {
-            if (string.IsNullOrEmpty(PathList[i]))
-                PathList.RemoveAt(i);
-        }
-        EditorPrefs.SetString(PathListKey, string.Join("|", PathList));
-    }
-
-    void OnLostFocus()
-    {
-        SavePath();
-    }
-
-    void OnGUI()
+    void OnGUI_FindChar()
     {
         EditorGUILayout.BeginVertical();
         EditorGUIUtility.labelWidth = 64;
@@ -220,17 +152,17 @@ public class FindPrefabChar : EditorWindow
         if (dict.Count > 0)
         {
             scroller = EditorGUILayout.BeginScrollView(scroller);
-            Data data;
+            CharData charData;
             for (int i = 0; i < searchData.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                data = searchData[i];
-                EditorGUILayout.LabelField(i.ToString(), data.cn_text);
-                data.foldout = EditorGUILayout.Foldout(data.foldout, "使用该文本的预设", true);
+                charData = searchData[i];
+                EditorGUILayout.LabelField(i.ToString(), charData.cn_text);
+                charData.foldout = EditorGUILayout.Foldout(charData.foldout, "使用该文本的预设", true);
                 EditorGUILayout.EndHorizontal();
-                if (data.foldout)
+                if (charData.foldout)
                 {
-                    foreach (var prefab in data.assetPaths)
+                    foreach (var prefab in charData.assetPaths)
                     {
                         EditorGUILayout.BeginHorizontal();
                         #region 显示/移除
@@ -292,9 +224,9 @@ public class FindPrefabChar : EditorWindow
     private void FindTextReference()
     {
         dict.Clear();
-        SavePath();
+        SaveCommitPath();
         //string[] dirs = Directory.GetFiles(findPath, "*.prefab", SearchOption.AllDirectories);
-        var paths = PathList.ToArray();
+        var paths = CommitPathList.ToArray();
         if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
         {
             ShowNotification(new GUIContent("请设置路径"));
@@ -321,7 +253,7 @@ public class FindPrefabChar : EditorWindow
                 else
                 {
                     var chnTxt = UnicodeToChinese(txt);
-                    data = new Data(txt, chnTxt);
+                    data = new CharData(txt, chnTxt);
                     data.assetPaths.Add(path);
                     dict.Add(txt, data);
                 }
@@ -331,7 +263,7 @@ public class FindPrefabChar : EditorWindow
         EditorUtility.ClearProgressBar();
     }
 
-    private void ToCSV(Dictionary<string, Data> dict)
+    private void ToCSV(Dictionary<string, CharData> dict)
     {
         var filename = Path.Combine(projectPath, "预设文字.csv");
         using var w = new StreamWriter(filename, false, Encoding.UTF8);
@@ -342,9 +274,9 @@ public class FindPrefabChar : EditorWindow
         w.Close();
     }
 
-    private void FromCSV(out Dictionary<string, Data> dict)
+    private void FromCSV(out Dictionary<string, CharData> dict)
     {
-        dict = new Dictionary<string, Data>();
+        dict = new Dictionary<string, CharData>();
         var filename = Path.Combine(projectPath, "预设文字.csv");
         //var needLoadAbs = new Dictionary<string, int>();
         using var sr = new StreamReader(filename);
@@ -355,7 +287,7 @@ public class FindPrefabChar : EditorWindow
             if (line.StartsWith("#"))
                 continue;
             var lines = line.Split(',');
-            var data = new Data(lines[0], lines[1]);
+            var data = new CharData(lines[0], lines[1]);
             dict.Add(lines[0], data);
         }
     }

@@ -21,9 +21,12 @@ namespace Common
         public static void DeleteFolder(string path)
 		{
 			path = path.Replace("/", "\\");
-			if (Directory.Exists(path))
-				Directory.Delete(path);
-		}
+			var dir = new DirectoryInfo(path);
+			//if (Directory.Exists(path))
+			//	Directory.Delete(path);
+			if(dir.Exists)
+				dir.Delete(true);
+        }
 
 		public static void CreateDirectory(string path)
 		{

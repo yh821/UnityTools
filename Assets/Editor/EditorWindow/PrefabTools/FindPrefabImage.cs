@@ -10,7 +10,7 @@ using UnityEditor.SceneManagement;
 using UnityEditorInternal;
 using Object = UnityEngine.Object;
 
-public class FindPrefabImage : EditorWindow
+public partial class PrefabTools : EditorWindow
 {
 
 	[MenuItem("Assets/查找预制图片", true)]
@@ -23,25 +23,21 @@ public class FindPrefabImage : EditorWindow
 	{
 		var texture = Selection.activeObject as Texture2D;
 		if (texture)
-			AddWindow();
-	}
-
-	[MenuItem("Tools/查找预制图片")]
-	static void AddWindow()
-	{
-		var win = GetWindow<FindPrefabImage>("查找预制图片");
-		win.Init();
+		{
+			var win = OpenWindow();
+			win.FindImageReference(texture);
+		}
 	}
 
 	[Serializable]
-    private class Data
+    private class SpriteData
     {
         public string path;
         public GameObject prefab;
         public List<string> children;
         public bool foldout;
 
-        public Data(string path, GameObject prefab)
+        public SpriteData(string path, GameObject prefab)
         {
             this.path = path;
             this.prefab = prefab;
@@ -61,11 +57,10 @@ public class FindPrefabImage : EditorWindow
     private Texture2D mReplaceTexture = null;
     private Texture2D mLastReplaceTexture = null;
 
-    private Dictionary<string, Data> mDataDict = new Dictionary<string, Data>();
-    private List<GameObject> mReference = new List<GameObject>();
+    private Dictionary<string, SpriteData> mSpriteDataMap = new Dictionary<string, SpriteData>();
+    private List<GameObject> mSpriteReference = new List<GameObject>();
 
-    private Vector2 mScroller = Vector2.zero;
-    private const int SpacePixels = 10;
+    private Vector2 mImageScroller = Vector2.zero;
 
     private string mGuid;
     private string mLastGuid;
@@ -75,7 +70,7 @@ public class FindPrefabImage : EditorWindow
 
     public const string PathListKey = "FindPrefabImage.CommitPathList";
     public const string DefaultPath = "Assets/Game/UIs";
-    public List<string> PathList = null;
+    public List<string> CommitPathList = null;
     private SerializedObject mPathSerializedObject;
     private SerializedProperty mPathSerializedProperty;
     private ReorderableList mPathReorderableList;
@@ -95,25 +90,18 @@ public class FindPrefabImage : EditorWindow
         }
     }
 
-    void OnLostFocus()
-    {
-        SavePath();
-    }
-
-    public void Init(Sprite sprite = null)
+    public void InitFindImage(Sprite sprite = null)
     {
         mInputSprite = sprite;
         //mFindPath = Path.Combine(Application.dataPath, "Game/UIs/View");
-
-        InitPathGui();
     }
 
     private void InitPathGui()
     {
         var pathStr = EditorPrefs.GetString(PathListKey, DefaultPath);
-        PathList = new List<string>(pathStr.Split('|'));
-        if (string.IsNullOrEmpty(PathList[0]))
-            PathList[0] = DefaultPath;
+        CommitPathList = new List<string>(pathStr.Split('|'));
+        if (string.IsNullOrEmpty(CommitPathList[0]))
+            CommitPathList[0] = DefaultPath;
         mPathSerializedObject = new SerializedObject(this);
         mPathSerializedProperty = mPathSerializedObject.FindProperty("CommitPathList");
         mPathReorderableList = new ReorderableList(mPathSerializedObject, mPathSerializedProperty)
@@ -128,21 +116,20 @@ public class FindPrefabImage : EditorWindow
         };
     }
 
-    private void SavePath()
+    private void SaveCommitPath()
     {
         mPathSerializedObject.ApplyModifiedProperties();
-        for (int i = 0; i < PathList.Count; i++)
+        for (int i = 0; i < CommitPathList.Count; i++)
         {
-            if(string.IsNullOrEmpty(PathList[i]))
-                PathList.RemoveAt(i);
+            if(string.IsNullOrEmpty(CommitPathList[i]))
+                CommitPathList.RemoveAt(i);
         }
-        EditorPrefs.SetString(PathListKey, string.Join("|", PathList));
+        EditorPrefs.SetString(PathListKey, string.Join("|", CommitPathList));
     }
 
-    void OnGUI()
+    void OnGUI_FindImage()
     {
         EditorGUIUtility.labelWidth = 64;
-        GUILayout.Space(SpacePixels);
 
         mPathReorderableList?.DoLayoutList();
 
@@ -170,7 +157,7 @@ public class FindPrefabImage : EditorWindow
 
 	        if (GUILayout.Button("遍历引用"))
 	        {
-		        var paths = PathList.ToArray();
+		        var paths = CommitPathList.ToArray();
 		        if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
 		        {
 			        ShowNotification(new GUIContent("请设置路径"));
@@ -226,7 +213,7 @@ public class FindPrefabImage : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        GUILayout.Space(SpacePixels);
+        GUILayout.Space(SPACE);
         if (GUILayout.Button("开始查找"))
         {
             if ((mIsSprite && mInputSprite != null) || (!mIsSprite && mInputTexture != null))
@@ -235,15 +222,15 @@ public class FindPrefabImage : EditorWindow
                 ShowNotification(new GUIContent("请设置查找的图片"));
         }
 
-        if (mDataDict.Count>0)
+        if (mSpriteDataMap.Count>0)
         {
-            mScroller = EditorGUILayout.BeginScrollView(mScroller);
-            DrawScrollView();
+            mImageScroller = EditorGUILayout.BeginScrollView(mImageScroller);
+            DrawSpriteScrollView();
             EditorGUILayout.EndScrollView();
 
             if (mReplaceSprite != null || mReplaceTexture != null)
             {
-                GUILayout.Space(SpacePixels);
+                GUILayout.Space(SPACE);
                 if (GUILayout.Button("全部替换"))
                 {
                     if (EditorUtility.DisplayDialog("提示", "全部替换(二次确认)", "确定", "取消"))
@@ -253,9 +240,9 @@ public class FindPrefabImage : EditorWindow
         }
     }
 
-    private void DrawScrollView()
+    private void DrawSpriteScrollView()
     {
-        foreach (var data in mDataDict.Values)
+        foreach (var data in mSpriteDataMap.Values)
         {
             EditorGUILayout.BeginHorizontal();
             {
@@ -319,15 +306,15 @@ public class FindPrefabImage : EditorWindow
                         ReplaceImage(stage.prefabContentsRoot, data.children);
                         EditorSceneManager.MarkSceneDirty(stage.scene);
 #else
-                        var go = CreatePrefabInstance(data.prefab);
-                        for (int i = 0; i < data.children.Count; i++)
+                        var go = CreatePrefabInstance(spriteData.prefab);
+                        for (int i = 0; i < spriteData.children.Count; i++)
                         {
-                            string path = data.children[i];
+                            string path = spriteData.children[i];
                             var image = go.transform.Find(path).GetComponent<Image>();
                             if (image != null)
                                 image.sprite = mReplaceSprite;
                         }
-                        PrefabUtility.ReplacePrefab(go, data.prefab, ReplacePrefabOptions.ConnectToPrefab);
+                        PrefabUtility.ReplacePrefab(go, spriteData.prefab, ReplacePrefabOptions.ConnectToPrefab);
                         AssetDatabase.SaveAssets();
 #endif
                     }
@@ -351,7 +338,7 @@ public class FindPrefabImage : EditorWindow
                             if (trans != null)
                                 Selection.activeObject = trans.gameObject;
 #else
-                            var fileName = Path.GetFileNameWithoutExtension(data.path);
+                            var fileName = Path.GetFileNameWithoutExtension(spriteData.path);
                             var target = GetSceneObject(fileName);
                             if (target != null && PrefabUtility.GetPrefabType(target) == PrefabType.PrefabInstance)
                             {
@@ -383,12 +370,12 @@ public class FindPrefabImage : EditorWindow
         }
     }
 
-    PrefabStage GetPrefabStage(Data data)
+    PrefabStage GetPrefabStage(SpriteData spriteData)
     {
         var stage = PrefabStageUtility.GetCurrentPrefabStage();
-        if (stage == null || stage.prefabAssetPath != data.path)
+        if (stage == null || stage.prefabAssetPath != spriteData.path)
         {
-            AssetDatabase.OpenAsset(data.prefab);
+            AssetDatabase.OpenAsset(spriteData.prefab);
             stage = PrefabStageUtility.GetCurrentPrefabStage();
         }
 
@@ -409,11 +396,11 @@ public class FindPrefabImage : EditorWindow
 
     private void StartFindImageReference()
     {
-        mDataDict.Clear();
-        SavePath();
+        mSpriteDataMap.Clear();
+        SaveCommitPath();
         //var dirs = Directory.GetFiles(mFindPath, "*.prefab", SearchOption.AllDirectories);
         //for (int i = 0; i < dirs.Length; i++)
-        var paths = PathList.ToArray();
+        var paths = CommitPathList.ToArray();
         if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
         {
             ShowNotification(new GUIContent("请设置路径"));
@@ -427,9 +414,9 @@ public class FindPrefabImage : EditorWindow
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (prefab != null)
             {
-                var data = new Data(path, prefab);
-                if (!mDataDict.ContainsKey(path) && GetAllSpritePath(prefab, ref data.children))
-                    mDataDict.Add(path, data);
+                var data = new SpriteData(path, prefab);
+                if (!mSpriteDataMap.ContainsKey(path) && GetAllSpritePath(prefab, ref data.children))
+                    mSpriteDataMap.Add(path, data);
             }
             EditorUtility.DisplayProgressBar("查找索引...", path, (float) i / len);
         }
@@ -438,13 +425,13 @@ public class FindPrefabImage : EditorWindow
 
     bool GetAllSpritePath(GameObject mainAsset, ref List<string> paths)
     {
-        mReference.Clear();
+        mSpriteReference.Clear();
 
         var rawImageList = mainAsset.GetComponentsInChildren<RawImage>(true);
         foreach (var rawImage in rawImageList)
         {
-            if (rawImage.texture != null && rawImage.texture == mInputTexture && !mReference.Contains(rawImage.gameObject))
-                mReference.Add(rawImage.gameObject);
+            if (rawImage.texture != null && rawImage.texture == mInputTexture && !mSpriteReference.Contains(rawImage.gameObject))
+                mSpriteReference.Add(rawImage.gameObject);
         }
 
         if (mIsSprite)
@@ -452,15 +439,15 @@ public class FindPrefabImage : EditorWindow
             var imageList = mainAsset.GetComponentsInChildren<Image>(true);
             foreach (var image in imageList)
             {
-                if (image.sprite != null && image.sprite == mInputSprite && !mReference.Contains(image.gameObject))
-                    mReference.Add(image.gameObject);
+                if (image.sprite != null && image.sprite == mInputSprite && !mSpriteReference.Contains(image.gameObject))
+                    mSpriteReference.Add(image.gameObject);
             }
         }
 
-        foreach (var go in mReference)
+        foreach (var go in mSpriteReference)
             paths.Add(GetPath(go));
 
-        return mReference.Count > 0;
+        return mSpriteReference.Count > 0;
     }
 
 	private static readonly Regex TextureRegex = new Regex(@"m_Texture: \{fileID: \d+, guid: (\w+), type: \d+\}", RegexOptions.Singleline);
@@ -502,7 +489,7 @@ public class FindPrefabImage : EditorWindow
 
     private void ReplaceAllImage()
     {
-        foreach (var data in mDataDict.Values)
+        foreach (var data in mSpriteDataMap.Values)
         {
             var go = PrefabUtility.InstantiatePrefab(data.prefab) as GameObject;
             ReplaceImage(go, data.children);
@@ -542,6 +529,15 @@ public class FindPrefabImage : EditorWindow
         mInputTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         mLastInputTexture = mInputTexture;
         StartFindImageReference();
+    }
+
+    public void FindImageReference(Texture2D texture)
+    {
+	    mIsSprite = false;
+	    mInputSprite = null;
+	    mInputTexture = texture;
+        mLastInputTexture = mInputTexture;
+	    StartFindImageReference();
     }
 
 }

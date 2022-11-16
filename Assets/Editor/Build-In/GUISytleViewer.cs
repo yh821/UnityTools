@@ -1,20 +1,20 @@
 using UnityEngine;
 using UnityEditor;
- 
- public class GUIStyleViewer : EditorWindow {
- 
+
+public partial class BuildInWindow
+{
      Vector2 scrollPosition = new Vector2(0,0);
      string search = "";
      GUIStyle textStyle;
   
-     private static GUIStyleViewer window;
-     [MenuItem("Tools/内置GUIStyle", false, 10)]
-     private static void OpenStyleViewer()
-     {
-         window = GetWindow<GUIStyleViewer>(false, "内置GUIStyle");
-     }
+     // private static GUIStyleViewer window;
+     // [MenuItem("Tools/内置GUIStyle", false, 10)]
+     // private static void OpenStyleViewer()
+     // {
+     //     window = GetWindow<GUIStyleViewer>(false, "内置GUIStyle");
+     // }
  
-     void OnGUI()
+     private void OnGuiStyle()
      {
          if (textStyle == null)
          {

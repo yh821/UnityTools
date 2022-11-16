@@ -3,14 +3,14 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-class GUIIconViewer : EditorWindow
+public partial class BuildInWindow
 {
-	[MenuItem("Tools/内置Icon", false, 10)]
-	public static void ShowWindow()
-	{
-		var win = GetWindow<GUIIconViewer>();
-		win.Init();
-	}
+	// [MenuItem("Tools/内置Icon", false, 10)]
+	// public static void ShowWindow()
+	// {
+	// 	var win = GetWindow<GUIIconViewer>();
+	// 	win.Init();
+	// }
 
 	private const string IconFile = "Assets/Editor/Build-In/IconName.txt";
 
@@ -26,7 +26,7 @@ class GUIIconViewer : EditorWindow
 
 	private GUIContent searchIcon;
 
-	public void Init()
+	public void InitStyle()
 	{
 		var file = AssetDatabase.LoadAssetAtPath<TextAsset>(IconFile);
 		allIcons = file.text.Split('\n');
@@ -36,7 +36,7 @@ class GUIIconViewer : EditorWindow
 		searchIcon.tooltip = "搜索图标";
 	}
 
-	private void OnGUI()
+	private void OnGuiIcon()
 	{
 		GUILayout.Space(6);
         EditorGUIUtility.labelWidth = 64;
