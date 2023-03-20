@@ -39,7 +39,7 @@ public partial class BuildInWindow
 	private void OnGuiIcon()
 	{
 		GUILayout.Space(6);
-        EditorGUIUtility.labelWidth = 64;
+		EditorGUIUtility.labelWidth = 64;
 
 		#region 搜索
 
@@ -106,5 +106,4 @@ public partial class BuildInWindow
 		}
 		GUILayout.EndScrollView();
 	}
-
 }

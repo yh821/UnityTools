@@ -278,7 +278,7 @@ namespace Common
 			UpdatePathList = SVNHelper.GetUpdatePaths();
 			mPathSerializedObject = new SerializedObject(this);
 
-			mCommitPathSerializedProperty = mPathSerializedObject.FindProperty("CommitPathList");
+			mCommitPathSerializedProperty = mPathSerializedObject.FindProperty("PrefabPathList");
 			mCommitPathReorderableList = new ReorderableList(mPathSerializedObject, mCommitPathSerializedProperty)
 			{
 				drawHeaderCallback = rect => GUI.Label(rect, "提交路径:"),
@@ -384,7 +384,5 @@ namespace Common
 
 			SVNHelper.SaveOption(CommitPathList, UpdatePathList);
 		}
-
 	}
-
 }

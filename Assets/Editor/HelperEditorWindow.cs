@@ -67,84 +67,84 @@ public class HelperEditorWindow : EditorWindow
 				}
 				EditorGUILayout.EndHorizontal();
 
-                #region Test
+				#region Test
 
-                //EditorGUILayout.BeginHorizontal();
-                //{
-                //	if (GUILayout.Button("SortText"))
-                //	{
-                //		if (string.IsNullOrEmpty(mFilePath))
-                //			ShowNotification(new GUIContent("请选择文件"));
-                //		else
-                //		{
-                //			var lines = new List<string>(IOHelper.ReadAllLines(mFilePath));
-                //			lines.Sort(string.Compare);
-                //			IOHelper.SaveFile(mFilePath, lines.ToArray());
-                //		}
-                //	}
+				//EditorGUILayout.BeginHorizontal();
+				//{
+				//	if (GUILayout.Button("SortText"))
+				//	{
+				//		if (string.IsNullOrEmpty(mFilePath))
+				//			ShowNotification(new GUIContent("请选择文件"));
+				//		else
+				//		{
+				//			var lines = new List<string>(IOHelper.ReadAllLines(mFilePath));
+				//			lines.Sort(string.Compare);
+				//			IOHelper.SaveFile(mFilePath, lines.ToArray());
+				//		}
+				//	}
 
-                //	if (GUILayout.Button("DelSame"))
-                //	{
-                //		if (string.IsNullOrEmpty(mFilePath))
-                //			ShowNotification(new GUIContent("请选择文件"));
-                //		else
-                //		{
-                //			var lines = IOHelper.ReadAllLines(mFilePath);
-                //			var dict = new Dictionary<string, int>();
-                //			foreach (var line in lines)
-                //			{
-                //				if (dict.ContainsKey(line))
-                //					dict[line] += 1;
-                //				else
-                //					dict.Add(line, 1);
-                //			}
+				//	if (GUILayout.Button("DelSame"))
+				//	{
+				//		if (string.IsNullOrEmpty(mFilePath))
+				//			ShowNotification(new GUIContent("请选择文件"));
+				//		else
+				//		{
+				//			var lines = IOHelper.ReadAllLines(mFilePath);
+				//			var dict = new Dictionary<string, int>();
+				//			foreach (var line in lines)
+				//			{
+				//				if (dict.ContainsKey(line))
+				//					dict[line] += 1;
+				//				else
+				//					dict.Add(line, 1);
+				//			}
 
-                //			IOHelper.SaveFile(mFilePath, dict.Keys.ToArray());
-                //			var withoutExtPath = mFilePath.Substring(0, mFilePath.LastIndexOf('.'));
-                //			var sb = new StringBuilder();
-                //			foreach (var kv in dict)
-                //			{
-                //				sb.Append(kv.Value).Append("\t").Append(kv.Key).Append('\n');
-                //			}
+				//			IOHelper.SaveFile(mFilePath, dict.Keys.ToArray());
+				//			var withoutExtPath = mFilePath.Substring(0, mFilePath.LastIndexOf('.'));
+				//			var sb = new StringBuilder();
+				//			foreach (var kv in dict)
+				//			{
+				//				sb.Append(kv.Value).Append("\t").Append(kv.Key).Append('\n');
+				//			}
 
-                //			IOHelper.SaveFile(withoutExtPath + "_c.txt", sb.ToString());
-                //		}
-                //	}
+				//			IOHelper.SaveFile(withoutExtPath + "_c.txt", sb.ToString());
+				//		}
+				//	}
 
-                //	if (GUILayout.Button("Del'_d'"))
-                //	{
-                //		if (string.IsNullOrEmpty(mFilePath))
-                //			ShowNotification(new GUIContent("请选择文件"));
-                //		else
-                //		{
-                //			var lines = IOHelper.ReadAllLines(mFilePath);
-                //			var swd = new List<string>();
-                //			var nwd = new List<string>();
-                //			foreach (var line in lines)
-                //			{
-                //				if (line.StartsWith("d_"))
-                //					swd.Add(line);
-                //				else
-                //					nwd.Add(line);
-                //			}
+				//	if (GUILayout.Button("Del'_d'"))
+				//	{
+				//		if (string.IsNullOrEmpty(mFilePath))
+				//			ShowNotification(new GUIContent("请选择文件"));
+				//		else
+				//		{
+				//			var lines = IOHelper.ReadAllLines(mFilePath);
+				//			var swd = new List<string>();
+				//			var nwd = new List<string>();
+				//			foreach (var line in lines)
+				//			{
+				//				if (line.StartsWith("d_"))
+				//					swd.Add(line);
+				//				else
+				//					nwd.Add(line);
+				//			}
 
-                //			var array = new List<string>(nwd);
-                //			foreach (var sd in swd)
-                //			{
-                //				var line = sd.Substring(2);
-                //				if (!nwd.Contains(line))
-                //					array.Add(sd);
-                //			}
+				//			var array = new List<string>(nwd);
+				//			foreach (var sd in swd)
+				//			{
+				//				var line = sd.Substring(2);
+				//				if (!nwd.Contains(line))
+				//					array.Add(sd);
+				//			}
 
-                //			IOHelper.SaveFile(mFilePath, array.ToArray());
-                //		}
-                //	}
-                //}
-                //EditorGUILayout.EndHorizontal();
+				//			IOHelper.SaveFile(mFilePath, array.ToArray());
+				//		}
+				//	}
+				//}
+				//EditorGUILayout.EndHorizontal();
 
-                #endregion
-            }
-            EditorGUILayout.EndVertical();
+				#endregion
+			}
+			EditorGUILayout.EndVertical();
 
 			GUILayout.Space(SPACE_SIZE);
 			EditorGUILayout.BeginVertical("Box");
@@ -190,33 +190,35 @@ public class HelperEditorWindow : EditorWindow
 			{
 				if (GUILayout.Button("提示弹窗"))
 				{
-					if(EditorUtility.DisplayDialog("title", "message", "ok"))
+					if (EditorUtility.DisplayDialog("title", "message", "ok"))
 						Debug.Log("click ok");
 				}
+
 				if (GUILayout.Button("提示弹窗"))
 				{
 					if (EditorUtility.DisplayDialog("title", "message", "ok", "cancel"))
 						Debug.Log("click ok");
 				}
+
 				if (GUILayout.Button("选择弹窗"))
 				{
 					var id = EditorUtility.DisplayDialogComplex("title", "message", "id=0", "id=1", "id=2");
 					switch (id)
 					{
-                        case 0:
-	                        Debug.Log("click ok");
-                            break;
-                        case 1:
-	                        Debug.Log("click cancel");
-	                        break;
-                        case 2:
-	                        Debug.Log("click alt");
-	                        break;
-                    }
+						case 0:
+							Debug.Log("click ok");
+							break;
+						case 1:
+							Debug.Log("click cancel");
+							break;
+						case 2:
+							Debug.Log("click alt");
+							break;
+					}
 				}
-            }
+			}
 			EditorGUILayout.EndHorizontal();
-        }
+		}
 		EditorGUILayout.EndScrollView();
 	}
 }

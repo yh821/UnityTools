@@ -5,97 +5,98 @@ using UnityEngine.UI;
 [InitializeOnLoad]
 public class UIComponentFactory
 {
-    static UIComponentFactory()
-    {
-        ObjectFactory.componentWasAdded += OnComponentWasAdded;
-    }
+	static UIComponentFactory()
+	{
+		ObjectFactory.componentWasAdded += OnComponentWasAdded;
+	}
 
-    public static void OnComponentWasAdded(Component com)
-    {
-        switch (com)
-        {
-            case Button button:
-            {
-                button.transition = Selectable.Transition.None;
-                var image = button.GetComponent<Image>();
-                if (image)
-                    image.raycastTarget = true;
-                break;
-            }
+	public static void OnComponentWasAdded(Component com)
+	{
+		switch (com)
+		{
+			case Button button:
+			{
+				button.transition = Selectable.Transition.None;
+				var image = button.GetComponent<Image>();
+				if (image)
+					image.raycastTarget = true;
+				break;
+			}
 
-            case Image image:
-            {
-                image.raycastTarget = false;
-                break;
-            }
+			case Image image:
+			{
+				image.raycastTarget = false;
+				break;
+			}
 
-            case Text text:
-            {
-                text.raycastTarget = false;
-                text.supportRichText = false;
-                text.fontSize = 20;
-                //text.font = AssetDatabase.LoadAssetAtPath<Font>("");
-                //EditorUtility.SetDirty(text);
-                break;
-            }
+			case Text text:
+			{
+				text.raycastTarget = false;
+				text.supportRichText = false;
+				text.fontSize = 20;
+				//text.font = AssetDatabase.LoadAssetAtPath<Font>("");
+				//EditorUtility.SetDirty(text);
+				break;
+			}
 
-            case RawImage rawImage:
-            {
-                rawImage.raycastTarget = false;
-                break;
-            }
-        }
-    }
+			case RawImage rawImage:
+			{
+				rawImage.raycastTarget = false;
+				break;
+			}
+		}
+	}
 
-    [MenuItem("CONTEXT/Image/×ª»»³ÉRawImage")]
-    public static void ReplaceImageToRawImage()
-    {
-        var image = Selection.activeGameObject.GetComponent<Image>();
-        if (image != null)
-        {
-            Texture2D tex = null;
-            if (image.sprite)
-                tex = image.sprite.texture;
-            //Material mat = null;
-            //if (image.mainTexture.name != "Default")
-            //    mat = image.material;
-            var ray = image.raycastTarget;
-            Object.DestroyImmediate(image);
-            var rawImage = Selection.activeGameObject.AddComponent<RawImage>();
-            rawImage.texture = tex;
-            //rawImage.material = mat;
-            rawImage.raycastTarget = ray;
-            EditorUtility.SetDirty(Selection.activeGameObject);
-        }
-    }
+	[MenuItem("CONTEXT/Image/×ªï¿½ï¿½ï¿½ï¿½RawImage")]
+	public static void ReplaceImageToRawImage()
+	{
+		var image = Selection.activeGameObject.GetComponent<Image>();
+		if (image != null)
+		{
+			Texture2D tex = null;
+			if (image.sprite)
+				tex = image.sprite.texture;
+			//Material mat = null;
+			//if (image.mainTexture.name != "Default")
+			//    mat = image.material;
+			var ray = image.raycastTarget;
+			Object.DestroyImmediate(image);
+			var rawImage = Selection.activeGameObject.AddComponent<RawImage>();
+			rawImage.texture = tex;
+			//rawImage.material = mat;
+			rawImage.raycastTarget = ray;
+			EditorUtility.SetDirty(Selection.activeGameObject);
+		}
+	}
 
-    [MenuItem("CONTEXT/RawImage/×ª»»³ÉImage")]
-    public static void ReplaceRawImageToImage()
-    {
-        var rawImage = Selection.activeGameObject.GetComponent<RawImage>();
-        if (rawImage != null)
-        {
-            Sprite sprite = null;
-            if (rawImage.texture != null)
-            {
-                var path = AssetDatabase.GetAssetPath(rawImage.texture);
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-                if (sprite == null)
-                {
-                    Debug.LogFormat("×ª»»Ê§°Ü, Í¼Æ¬ <color=yellow>{0}</color> ²»ÊÇ sprite ÀàÐÍ!", rawImage.texture.name);
-                    return;
-                }
-            }
-            //Material mat = null;
-            //if (rawImage.mainTexture.name != "Default")
-            //    mat = rawImage.material;
-            var ray = rawImage.raycastTarget;
-            Object.DestroyImmediate(rawImage);
-            var image = Selection.activeGameObject.AddComponent<Image>();
-            image.sprite = sprite;
-            //image.material = mat;
-            image.raycastTarget = ray;
-            EditorUtility.SetDirty(Selection.activeGameObject);
-        }
-    }
+	[MenuItem("CONTEXT/RawImage/×ªï¿½ï¿½ï¿½ï¿½Image")]
+	public static void ReplaceRawImageToImage()
+	{
+		var rawImage = Selection.activeGameObject.GetComponent<RawImage>();
+		if (rawImage != null)
+		{
+			Sprite sprite = null;
+			if (rawImage.texture != null)
+			{
+				var path = AssetDatabase.GetAssetPath(rawImage.texture);
+				sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+				if (sprite == null)
+				{
+					Debug.LogFormat("×ªï¿½ï¿½Ê§ï¿½ï¿½, Í¼Æ¬ <color=yellow>{0}</color> ï¿½ï¿½ï¿½ï¿½ sprite ï¿½ï¿½ï¿½ï¿½!", rawImage.texture.name);
+					return;
+				}
+			}
+
+			//Material mat = null;
+			//if (rawImage.mainTexture.name != "Default")
+			//    mat = rawImage.material;
+			var ray = rawImage.raycastTarget;
+			Object.DestroyImmediate(rawImage);
+			var image = Selection.activeGameObject.AddComponent<Image>();
+			image.sprite = sprite;
+			//image.material = mat;
+			image.raycastTarget = ray;
+			EditorUtility.SetDirty(Selection.activeGameObject);
+		}
+	}
 }

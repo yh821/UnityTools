@@ -10,183 +10,185 @@ using UnityToolbarExtender;
 [InitializeOnLoad]
 public class UnityTopBar
 {
-    public const string ProjName = "UnityTools";
+	public const string ProjName = "UnityTools";
 
-    private static GUIStyle _style;
-    private static bool _needCheckScene = false;
+	private static GUIStyle _style;
+	private static bool _needCheckScene = false;
 
-    static UnityTopBar()
-    {
-        ToolbarExtender.LeftToolbarGUI.Add(OnLeftToolbarGUI);
-        ToolbarExtender.RightToolbarGUI.Add(OnRightToolbarGUI);
-        EditorSceneManager.sceneOpened += OnSceneOpened;
-        EditorSceneManager.newSceneCreated += OnSceneCreated;
-    }
+	static UnityTopBar()
+	{
+		ToolbarExtender.LeftToolbarGUI.Add(OnLeftToolbarGUI);
+		ToolbarExtender.RightToolbarGUI.Add(OnRightToolbarGUI);
+		EditorSceneManager.sceneOpened += OnSceneOpened;
+		EditorSceneManager.newSceneCreated += OnSceneCreated;
+	}
 
-    static void OnSceneOpened(Scene scene, OpenSceneMode mode)
-    {
-        _needCheckScene = scene.path.StartsWith("Assets/Game/Scenes/Map/");
-        if (_needCheckScene)
-        {
-            var roots = scene.GetRootGameObjects();
-            foreach(var go in roots)
-            {
-                if(go.name.ToLower() == "main")
-                {
-                    return;
-                }
-            }
-            _needCheckScene = false;
-        }
-    }
+	static void OnSceneOpened(Scene scene, OpenSceneMode mode)
+	{
+		_needCheckScene = scene.path.StartsWith("Assets/Game/Scenes/Map/");
+		if (_needCheckScene)
+		{
+			var roots = scene.GetRootGameObjects();
+			foreach (var go in roots)
+			{
+				if (go.name.ToLower() == "main")
+				{
+					return;
+				}
+			}
 
-    static void OnSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
-    {
-        _needCheckScene = false;
-    }
+			_needCheckScene = false;
+		}
+	}
 
-    static void OnLeftToolbarGUI()
-    {
-        if (_style == null)
-        {
-            _style = new GUIStyle("BoldLabel") { fontSize = 16 };
-        }
+	static void OnSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
+	{
+		_needCheckScene = false;
+	}
 
-        if (GUILayout.Button(EditorGUIUtility.IconContent("SettingsIcon", "|svn¬∑æ∂≈‰÷√"), GUILayout.Height(22)))
-        {
-	        SVNHelper.OpenPathOption();
-        }
+	static void OnLeftToolbarGUI()
+	{
+		if (_style == null)
+		{
+			_style = new GUIStyle("BoldLabel") {fontSize = 16};
+		}
 
-        if (GUILayout.Button(new GUIContent("Ã·Ωª", "Ã·Ωªunityπ§≥Ãsvn"), GUILayout.Height(22)))
-        {
-            SVNHelper.ExecuteCommand(SVNHelper.Command.Commit, SVNHelper.GetCommitPaths());
-        }
+		if (GUILayout.Button(EditorGUIUtility.IconContent("SettingsIcon", "|svnË∑ØÂæÑÈÖçÁΩÆ"), GUILayout.Height(22)))
+		{
+			SVNHelper.OpenPathOption();
+		}
 
-        GUI.color = new Color(0.33f,0.75f,1f);
-        if (GUILayout.Button(new GUIContent("∏¸–¬", "∏¸–¬unityπ§≥Ãsvn"), GUILayout.Height(22)))
-        {
-            if (EditorApplication.isPlaying)
-                EditorApplication.isPaused = true;
-            SVNHelper.ExecuteCommand(SVNHelper.Command.Update, SVNHelper.GetUpdatePaths());
-        }
-        GUI.color = Color.white;
+		if (GUILayout.Button(new GUIContent("Êèê‰∫§", "Êèê‰∫§unityÂ∑•Á®ãsvn"), GUILayout.Height(22)))
+		{
+			SVNHelper.ExecuteCommand(SVNHelper.Command.Commit, SVNHelper.GetCommitPaths());
+		}
 
-        GUILayout.FlexibleSpace();
+		GUI.color = new Color(0.33f, 0.75f, 1f);
+		if (GUILayout.Button(new GUIContent("Êõ¥Êñ∞", "Êõ¥Êñ∞unityÂ∑•Á®ãsvn"), GUILayout.Height(22)))
+		{
+			if (EditorApplication.isPlaying)
+				EditorApplication.isPaused = true;
+			SVNHelper.ExecuteCommand(SVNHelper.Command.Update, SVNHelper.GetUpdatePaths());
+		}
 
-        GUILayout.Label(ProjName, _style);
-    }
+		GUI.color = Color.white;
 
-    static void OnRightToolbarGUI()
-    {
-        if (EditorApplication.isPlaying)
-            return;
+		GUILayout.FlexibleSpace();
 
-        if (GUILayout.Button(new GUIContent("ø’≥°æ∞", "–¬Ω®ø’≥°æ∞"), GUILayout.Height(22)))
-        {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-            var camera = new GameObject("Camera", typeof(Camera));
-            camera.transform.position = new Vector3(0, 1, -10);
-        }
+		GUILayout.Label(ProjName, _style);
+	}
 
-        GUI.color = Color.green;
-        if (GUILayout.Button(new GUIContent("÷˜≥°æ∞", "∆Ù∂Ø”Œœ∑≥°æ∞"), GUILayout.Height(22)))
-        {
-            EditorSceneManager.OpenScene("Assets/Scenes/main.unity");
-        }
+	static void OnRightToolbarGUI()
+	{
+		if (EditorApplication.isPlaying)
+			return;
 
-        if (_needCheckScene)
-        {
-            GUI.color = Color.red;
-            if (GUILayout.Button(new GUIContent("ºÏ≤È≥°æ∞", "ºÏ≤È≥°æ∞"), GUILayout.Height(22)))
-            {
-                SceneCheckList();
-            }
-        }
+		if (GUILayout.Button(new GUIContent("Á©∫Âú∫ÊôØ", "Êñ∞Âª∫Á©∫Âú∫ÊôØ"), GUILayout.Height(22)))
+		{
+			EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
+			var camera = new GameObject("Camera", typeof(Camera));
+			camera.transform.position = new Vector3(0, 1, -10);
+		}
 
-        GUI.color = Color.white;
-        GUILayout.FlexibleSpace();
-    }
+		GUI.color = Color.green;
+		if (GUILayout.Button(new GUIContent("‰∏ªÂú∫ÊôØ", "ÂêØÂä®Ê∏∏ÊàèÂú∫ÊôØ"), GUILayout.Height(22)))
+		{
+			EditorSceneManager.OpenScene("Assets/Game/Scenes/main.unity");
+		}
 
-    private static void SceneCheckList()
-    {
-        var content = new System.Text.StringBuilder();
-        var scene = SceneManager.GetActiveScene();
+		if (_needCheckScene)
+		{
+			GUI.color = Color.red;
+			if (GUILayout.Button(new GUIContent("Ê£ÄÊü•Âú∫ÊôØ", "Ê£ÄÊü•Âú∫ÊôØ"), GUILayout.Height(22)))
+			{
+				SceneCheckList();
+			}
+		}
 
-        var missingPrefabList = new List<GameObject>();
-        var roots = scene.GetRootGameObjects();
-        foreach(var go in roots)
-        {
-            //…æ≥˝µ⁄“ª≤„ø’Ω⁄µ„
-            if (go.transform.childCount == 0)
-            {
-                var com = go.GetComponentsInChildren<Component>();
-                if (com.Length <= 1)
-                {
-                    Debug.Log($"…æ≥˝ø’Ω⁄µ„: <color=yellow>{go.name}</color>");
-                    Object.DestroyImmediate(go);
-                    continue;
-                }
-            }
+		GUI.color = Color.white;
+		GUILayout.FlexibleSpace();
+	}
 
-            // ’ºØMissingPrefabµƒ µ¿˝
-            WalkNode(go.transform, missingPrefabList);
-        }
+	private static void SceneCheckList()
+	{
+		var content = new System.Text.StringBuilder();
+		var scene = SceneManager.GetActiveScene();
 
-        //«Â≥˝MissingPrefabµƒ µ¿˝
-        foreach(var go in missingPrefabList)
-        {
-            Debug.Log($"…æ≥˝MissingPrefab: <color=yellow>{go.ScenePath()}</color>");
-            Object.DestroyImmediate(go);
-        }
+		var missingPrefabList = new List<GameObject>();
+		var roots = scene.GetRootGameObjects();
+		foreach (var go in roots)
+		{
+			//Âà†Èô§Á¨¨‰∏ÄÂ±ÇÁ©∫ËäÇÁÇπ
+			if (go.transform.childCount == 0)
+			{
+				var com = go.GetComponentsInChildren<Component>();
+				if (com.Length <= 1)
+				{
+					Debug.Log($"Âà†Èô§Á©∫ËäÇÁÇπ: <color=yellow>{go.name}</color>");
+					Object.DestroyImmediate(go);
+					continue;
+				}
+			}
 
-        // «∑Ò∫Ê≈‡
-        if(Lightmapping.lightingDataAsset == null)
-        {
-            content.Append("»±…Ÿπ‚’’Ã˘Õº, ºÏ≤È «∑Ò“—∫Ê≈‡!");
-        }
+			//Êî∂ÈõÜMissingPrefabÁöÑÂÆû‰æã
+			WalkNode(go.transform, missingPrefabList);
+		}
 
-        //—∞¬∑Õ¯∏Ò
-        var triangulation = NavMesh.CalculateTriangulation();
-        if(triangulation.vertices.Length <= 0)
-        {
-            content.Append("»±…Ÿ—∞¬∑Õ¯∏Ò, ºÏ≤È «∑Ò“—∫Ê≈‡!");
-        }
+		//Ê∏ÖÈô§MissingPrefabÁöÑÂÆû‰æã
+		foreach (var go in missingPrefabList)
+		{
+			Debug.Log($"Âà†Èô§MissingPrefab: <color=yellow>{go.ScenePath()}</color>");
+			Object.DestroyImmediate(go);
+		}
 
-        //ª∑æ≥π‚
-        var lightColor = RenderSettings.ambientLight;
-        var grayLevel = lightColor.r * 0.299f + lightColor.g * 0.587f + lightColor.b * 0.114f;
-        if (grayLevel < 0.75f)
-        {
-            RenderSettings.ambientLight = Color.white;
-            content.Append("“—Ω´ª∑æ≥π‚∏ƒŒ™∞◊…´!");
-        }
+		//ÊòØÂê¶ÁÉòÂüπ
+		if (Lightmapping.lightingDataAsset == null)
+		{
+			content.Append("Áº∫Â∞ëÂÖâÁÖßË¥¥Âõæ, Ê£ÄÊü•ÊòØÂê¶Â∑≤ÁÉòÂüπ!");
+		}
 
-        if (content.Length > 0)
-        {
-            Debug.LogError(content.ToString());
-            EditorUtility.DisplayDialog("¥ÌŒÛ", content.ToString(), "»∑∂®");
-        }
-        else
-        {
-            Debug.Log("≥°æ∞ºÏ≤ÈÕÍ≥…");
-        }
+		//ÂØªË∑ØÁΩëÊ†º
+		var triangulation = NavMesh.CalculateTriangulation();
+		if (triangulation.vertices.Length <= 0)
+		{
+			content.Append("Áº∫Â∞ëÂØªË∑ØÁΩëÊ†º, Ê£ÄÊü•ÊòØÂê¶Â∑≤ÁÉòÂüπ!");
+		}
 
-        EditorSceneManager.SaveScene(scene);
-    }
+		//ÁéØÂ¢ÉÂÖâ
+		var lightColor = RenderSettings.ambientLight;
+		var grayLevel = lightColor.r * 0.299f + lightColor.g * 0.587f + lightColor.b * 0.114f;
+		if (grayLevel < 0.75f)
+		{
+			RenderSettings.ambientLight = Color.white;
+			content.Append("Â∑≤Â∞ÜÁéØÂ¢ÉÂÖâÊîπ‰∏∫ÁôΩËâ≤!");
+		}
 
-    private static void WalkNode(Transform parent, List<GameObject> missingList)
-    {
-        if(PrefabUtility.IsPrefabAssetMissing(parent.gameObject))
-        {
-            missingList.Add(parent.gameObject);
-            return;
-        }
-        if (parent.childCount == 0)
-            return;
-        for(int i = 0, len = parent.childCount; i < len; i++)
-        {
-            WalkNode(parent.GetChild(i), missingList);
-        }
-    }
+		if (content.Length > 0)
+		{
+			Debug.LogError(content.ToString());
+			EditorUtility.DisplayDialog("ÈîôËØØ", content.ToString(), "Á°ÆÂÆö");
+		}
+		else
+		{
+			Debug.Log("Âú∫ÊôØÊ£ÄÊü•ÂÆåÊàê");
+		}
 
+		EditorSceneManager.SaveScene(scene);
+	}
+
+	private static void WalkNode(Transform parent, List<GameObject> missingList)
+	{
+		if (PrefabUtility.IsPrefabAssetMissing(parent.gameObject))
+		{
+			missingList.Add(parent.gameObject);
+			return;
+		}
+
+		if (parent.childCount == 0)
+			return;
+		for (int i = 0, len = parent.childCount; i < len; i++)
+		{
+			WalkNode(parent.GetChild(i), missingList);
+		}
+	}
 }

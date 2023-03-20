@@ -18,8 +18,6 @@ public static class GameViewHelper
 	}
 
 
-
-
 	public enum GameViewSizeType
 	{
 		AspectRatio,
