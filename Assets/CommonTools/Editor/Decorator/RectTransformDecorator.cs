@@ -7,9 +7,7 @@ using UnityEngine;
 [CustomEditor(typeof(RectTransform), true)]
 public class RectTransformDecorator : DecoratorEditor
 {
-	public RectTransformDecorator() : base("RectTransformInspector")
-	{
-	}
+	public RectTransformDecorator() : base("RectTransformInspector") { }
 
 	public override void OnInspectorGUI()
 	{

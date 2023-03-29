@@ -129,7 +129,7 @@ public abstract class DecoratorEditor : Editor
 		}
 	}
 
-	public void OnSceneGUI()
+	protected virtual void OnSceneGUI()
 	{
 		CallInspectorMethod("OnSceneGUI");
 	}
