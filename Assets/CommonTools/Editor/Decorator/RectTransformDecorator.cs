@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,14 +14,11 @@ public class RectTransformDecorator : DecoratorEditor
 	{
 		base.OnInspectorGUI();
 
-		if (GUILayout.Button("取整"))
+		if (GUILayout.Button("位置取整"))
 		{
 			var rt = serializedObject.targetObject as RectTransform;
-			var pos = rt.anchoredPosition3D;
-			rt.anchoredPosition3D =
-				new Vector3(Mathf.RoundToInt(pos.x), Mathf.RoundToInt(pos.y), Mathf.RoundToInt(pos.z));
-			var size = rt.sizeDelta;
-			rt.sizeDelta = new Vector2(Mathf.RoundToInt(size.x), Mathf.RoundToInt(size.y));
+			rt.anchoredPosition = MathHelper.RoundToInt(rt.anchoredPosition, true);
+			rt.sizeDelta = MathHelper.RoundToInt(rt.sizeDelta);
 		}
 	}
 }

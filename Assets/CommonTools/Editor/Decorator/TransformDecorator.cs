@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Common;
 using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(Transform), true)]
 public class TransformDecorator : DecoratorEditor
 {
-	public TransformDecorator() : base("TransformInspector")
-	{
-	}
+	public TransformDecorator() : base("TransformInspector") { }
+
+	protected override void OnSceneGUI() { }
 
 	public override void OnInspectorGUI()
 	{
@@ -18,9 +19,7 @@ public class TransformDecorator : DecoratorEditor
 		if (GUILayout.Button("取整"))
 		{
 			var trans = serializedObject.targetObject as Transform;
-			var pos = trans.localPosition;
-			trans.localPosition =
-				new Vector3(Mathf.RoundToInt(pos.x), Mathf.RoundToInt(pos.y), Mathf.RoundToInt(pos.z));
+			trans.localPosition = MathHelper.RoundToInt(trans.localPosition);
 		}
 	}
 }
