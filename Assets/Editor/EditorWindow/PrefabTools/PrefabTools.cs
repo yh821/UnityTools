@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.SceneManagement;
+
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -183,13 +183,13 @@ public partial class PrefabTools : EditorWindow
 		return GameObject.Find(name);
 	}
 
-	public static PrefabStage GetPrefabStage(GameObject prefab, string path)
+	public static UnityEditor.SceneManagement.PrefabStage GetPrefabStage(GameObject prefab, string path)
 	{
-		var stage = PrefabStageUtility.GetCurrentPrefabStage();
+		var stage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
 		if (stage == null || stage.prefabAssetPath != path)
 		{
 			AssetDatabase.OpenAsset(prefab);
-			stage = PrefabStageUtility.GetCurrentPrefabStage();
+			stage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
 		}
 
 		return stage;
